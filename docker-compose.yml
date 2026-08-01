@@ -1,0 +1,42 @@
+services:
+  web:
+    # Build locally by default; set NCODEC_IMAGE to run a published tag from ghcr.io instead.
+    image: ${NCODEC_IMAGE:-neuroncodec/neuroncodec.com:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${NCODEC_VERSION:-0.1.0.0}
+        INFORMATIONAL_VERSION: ${NCODEC_INFORMATIONAL_VERSION:-0.1.0-local}
+    container_name: neuroncodec-web
+    restart: unless-stopped
+    ports:
+      - "${NCODEC_PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+
+      # Absolute origin used for canonical URLs, the sitemap and share tags.
+      NeuronCodec__Site__BaseUrl: ${NCODEC_BASE_URL:-http://localhost:8080}
+
+      # Seeds the admin account on an empty database. The account is flagged so the first
+      # sign-in forces a password change — this value is only ever a bootstrap credential.
+      NeuronCodec__Admin__Username: ${NCODEC_ADMIN_USERNAME:-admin}
+      NeuronCodec__Admin__Password: ${NCODEC_ADMIN_PASSWORD:?set NCODEC_ADMIN_PASSWORD in .env}
+
+      NeuronCodec__Uploads__MaxBytes: ${NCODEC_MAX_UPLOAD_BYTES:-26214400}
+    volumes:
+      # SQLite database plus the Data Protection key ring. Losing this volume signs everyone
+      # out and makes any stored TOTP secret unreadable.
+      - ncodec-data:/app/data
+      # Uploaded media, served read-only at /uploads.
+      - ncodec-uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  ncodec-data:
+  ncodec-uploads:
