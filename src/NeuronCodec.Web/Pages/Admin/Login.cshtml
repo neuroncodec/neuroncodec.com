@@ -1,0 +1,35 @@
+@page "/admin/login"
+@model NeuronCodec.Web.Pages.Admin.LoginModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Sign in";
+}
+
+<h1>Sign in</h1>
+<p>Admin access to @Model.SiteName.</p>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-error" role="alert">@Model.ErrorMessage</div>
+}
+
+<form method="post" class="form-grid">
+    <div class="field">
+        <label for="username">Username</label>
+        <input class="input" id="username" name="Input.Username" value="@Model.Input.Username"
+               autocomplete="username" required autofocus/>
+    </div>
+
+    <div class="field">
+        <label for="password">Password</label>
+        <input class="input" id="password" name="Input.Password" type="password"
+               autocomplete="current-password" required/>
+    </div>
+
+    <label class="checkbox">
+        <input type="checkbox" name="Input.RememberMe" value="true" checked="@Model.Input.RememberMe"/>
+        Stay signed in for 14 days
+    </label>
+
+    <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+</form>

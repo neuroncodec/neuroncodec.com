@@ -1,0 +1,400 @@
+/*
+ * Public site layer. Every rule here is the design's own inline styling lifted into a named
+ * class — same values, one place to change them. Colours, radii and shadows still come from the
+ * Organic tokens in ds/styles.css; nothing is hard-coded that a token already carries.
+ */
+
+/* ── Page containers ─────────────────────────────────────────────────────── */
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 48px);
+}
+
+/* The reading measure used by Article, About and Projects. */
+.page-narrow {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 48px) 96px;
+}
+
+.page-narrow.page-narrow-about { padding-bottom: 88px; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  padding: 10px 16px;
+  background: var(--color-surface);
+  border-radius: 999px;
+  z-index: 10;
+}
+
+.skip-link:focus-visible { left: 12px; top: 12px; }
+
+/* ── Header and footer ───────────────────────────────────────────────────── */
+.site-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 22px clamp(20px, 4vw, 48px);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.site-nav a {
+  color: inherit;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current='page'] { color: var(--color-accent); }
+
+.site-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text);
+  margin-right: auto;
+}
+
+.site-nav-brand .nav-brand { margin-right: 0; }
+.site-nav-brand:hover { color: var(--color-text); }
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 32px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px clamp(20px, 4vw, 48px) 40px;
+  border-top: 1px solid var(--color-divider);
+}
+
+.site-footer-copy {
+  font-size: 13px;
+  color: var(--color-text);
+  opacity: 0.6;
+}
+
+.site-footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+
+.site-footer-links a {
+  font-size: 13px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.site-footer-links a:hover { color: var(--color-accent-700); }
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.eyebrow {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-accent-700);
+  margin-bottom: 14px;
+}
+
+.hero {
+  padding: 56px 0 44px;
+  max-width: 660px;
+}
+
+.hero-tight { padding-bottom: 40px; }
+.hero h1 { margin: 0 0 14px; }
+
+.hero-lede {
+  font-size: 17px;
+  line-height: 1.6;
+  opacity: 0.75;
+  margin: 0;
+}
+
+/* ── Article cards ───────────────────────────────────────────────────────── */
+.section-articles { padding: 8px 0 56px; }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.section-head h2 { margin: 0; }
+
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.article-card {
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.article-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.article-card-tag { align-self: flex-start; white-space: nowrap; }
+.article-card-meta { white-space: nowrap; }
+
+/* Shown when no article has been published yet. */
+.empty-state {
+  padding: 40px clamp(24px, 4vw, 40px);
+  text-align: center;
+  opacity: 0.7;
+  font-size: 15px;
+}
+
+/* ── Projects / coming soon ──────────────────────────────────────────────── */
+.section-projects { padding: 8px 0 72px; }
+.section-projects h2 { margin: 0 0 20px; }
+
+.feature-card {
+  padding: 36px clamp(24px, 4vw, 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.feature-card h2, .feature-card h3 { margin: 0; }
+
+.feature-card p {
+  margin: 0;
+  opacity: 0.75;
+  max-width: 58ch;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.feature-card .btn { margin-top: 6px; }
+
+.feature-card-lg { padding: 44px clamp(24px, 4vw, 44px); gap: 12px; }
+.feature-card-lg p { max-width: 56ch; font-size: 16px; line-height: 1.65; }
+.feature-card-lg .btn { margin-top: 10px; }
+
+/* ── Pagination ──────────────────────────────────────────────────────────── */
+.section-article-list { padding: 0 0 16px; }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 48px 0 72px;
+}
+
+.pagination .btn { min-width: 40px; text-align: center; }
+.pagination .btn-icon { min-width: 36px; }
+
+/* ── Article page ────────────────────────────────────────────────────────── */
+.article-back { padding: 36px 0 0; }
+
+.article-back a {
+  font-size: 13px;
+  color: var(--color-text);
+  text-decoration: none;
+  opacity: 0.6;
+}
+
+.article-back a:hover { opacity: 1; color: var(--color-accent-700); }
+
+.article-header {
+  padding: 20px 0 32px;
+  border-bottom: 1px solid var(--color-divider);
+  margin-bottom: 36px;
+}
+
+.article-header .tag { display: inline-flex; margin-bottom: 16px; white-space: nowrap; }
+.article-header h1 { margin: 0 0 16px; }
+.article-header .card-meta { font-size: 13px; white-space: nowrap; }
+
+.article-hero {
+  margin: 0 0 36px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.article-lede {
+  font-size: 19px;
+  line-height: 1.6;
+  opacity: 0.85;
+  margin: 0 0 28px;
+}
+
+.article-stub {
+  font-size: 15px;
+  font-style: italic;
+  opacity: 0.55;
+  margin-top: 8px;
+}
+
+.article-tags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-divider);
+}
+
+.not-found { padding: 96px 0; text-align: center; }
+.not-found h1 { margin: 0 0 12px; }
+.not-found a { color: var(--color-accent-700); }
+.not-found a:hover { color: var(--color-accent); }
+
+/* ── Rendered markdown ───────────────────────────────────────────────────── */
+/* h2 and p follow the design exactly; the rest extends it from the same tokens. */
+.prose h2 { margin: 40px 0 16px; }
+.prose h3 { margin: 32px 0 14px; }
+.prose h4 { margin: 28px 0 12px; }
+
+.prose p {
+  font-size: 17px;
+  line-height: 1.75;
+  margin: 0 0 22px;
+  opacity: 0.88;
+}
+
+.prose ul, .prose ol {
+  font-size: 17px;
+  line-height: 1.75;
+  opacity: 0.88;
+  margin: 0 0 22px;
+  padding-left: 22px;
+}
+
+.prose li { margin-bottom: 8px; }
+.prose li::marker { color: var(--color-accent); }
+
+.prose a { color: var(--color-accent-700); text-decoration: underline; }
+.prose a:hover { color: var(--color-accent); }
+
+.prose blockquote {
+  margin: 0 0 22px;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-accent-300);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  font-size: 17px;
+  line-height: 1.7;
+  opacity: 0.9;
+}
+
+.prose blockquote p:last-child { margin-bottom: 0; }
+
+.prose code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-200);
+}
+
+.prose pre {
+  margin: 0 0 22px;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-900);
+  color: var(--color-neutral-100);
+  overflow-x: auto;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.prose pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+.prose img {
+  border-radius: var(--radius-md);
+  margin: 0 0 22px;
+}
+
+.prose figure { margin: 0 0 22px; }
+.prose figcaption { text-align: center; }
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  margin: 0 0 22px;
+}
+
+.prose th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.prose td {
+  padding: var(--space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.prose hr {
+  height: 1px;
+  border: 0;
+  margin: var(--space-6) 0;
+  background: var(--color-divider);
+}
+
+/* ── About ───────────────────────────────────────────────────────────────── */
+.about-intro { padding: 56px 0 48px; }
+
+.about-intro p, .about-body {
+  font-size: 18px;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+.about-intro p { margin: 0 0 24px; }
+.about-body { margin: 0; }
+
+.tag-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.tag-row .tag { white-space: nowrap; }
+
+.about-section {
+  padding: 48px 0 0;
+  border-top: 1px solid var(--color-divider);
+}
+
+.about-section + .about-section { margin-top: 48px; }
+.about-section h2 { margin: 0 0 22px; }
+
+.pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.button-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ── Projects page ───────────────────────────────────────────────────────── */
+.projects-head { padding: 56px 0 8px; }
+.projects-head h1 { margin: 0; }
+.projects-body { padding: 40px 0 0; }

@@ -1,0 +1,158 @@
+@page "/admin/media"
+@model NeuronCodec.Web.Pages.Admin.Media.IndexModel
+@{
+    ViewData["Title"] = "Media";
+    ViewData["AdminSection"] = "media";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>Media</h1>
+        <p>@Model.TotalCount file@(Model.TotalCount == 1 ? "" : "s") · @Format.FileSize(Model.TotalBytes) stored.</p>
+    </div>
+</div>
+
+<div class="panel">
+    <form method="post" asp-page-handler="Upload" enctype="multipart/form-data" id="upload-form">
+        @Html.AntiForgeryToken()
+        <div class="dropzone" id="dropzone">
+            <p>Drag files here, or choose them below.</p>
+            <div class="row" style="justify-content:center">
+                <input class="input" type="file" name="files" id="file-input" multiple style="max-width:340px"/>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </div>
+            <p class="field-hint" style="margin-top:10px">
+                Images, documents, audio and video up to 25 MB each.
+            </p>
+        </div>
+    </form>
+</div>
+
+<form method="get" class="toolbar">
+    <div class="field field-grow">
+        <label for="q">Search</label>
+        <input class="input" id="q" name="q" value="@Model.Query" placeholder="Filename or alt text"/>
+    </div>
+    <button type="submit" class="btn btn-secondary">Search</button>
+    @if (!string.IsNullOrWhiteSpace(Model.Query))
+    {
+        <a href="/admin/media" class="btn btn-ghost">Clear</a>
+    }
+</form>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="panel">
+        <p class="empty-row mb-0">
+            @(string.IsNullOrWhiteSpace(Model.Query) ? "No files uploaded yet." : "No files match that search.")
+        </p>
+    </div>
+}
+else
+{
+    <div class="media-grid">
+        @foreach (var file in Model.Items)
+        {
+            <div class="media-item" style="cursor:default">
+                <div class="media-thumb">
+                    @if (file.IsImage)
+                    {
+                        <img src="@file.Url" alt="@file.AltText" loading="lazy"/>
+                    }
+                    else
+                    {
+                        <span class="media-ext">@file.Extension.TrimStart('.')</span>
+                    }
+                </div>
+                <span class="media-name" title="@file.OriginalName">@file.OriginalName</span>
+                <span class="media-meta">
+                    @Format.FileSize(file.SizeBytes)
+                    @if (file.Width is { } w && file.Height is { } h)
+                    {
+                        <text> · @w×@h</text>
+                    }
+                </span>
+
+                <div class="media-actions">
+                    <button type="button" class="btn btn-secondary" data-copy-url="@file.Url">Copy URL</button>
+                    <a class="btn btn-secondary" href="@file.Url" target="_blank" rel="noopener">Open</a>
+                    <button type="button" class="btn btn-secondary" data-open-details="details-@file.Id">Details</button>
+                </div>
+
+                <dialog class="modal" id="details-@file.Id">
+                    <div class="modal-head">
+                        <h2>File details</h2>
+                        <button type="button" class="btn btn-ghost" data-close-dialog>Close</button>
+                    </div>
+                    <div class="modal-body stack">
+                        @if (file.IsImage)
+                        {
+                            <img src="@file.Url" alt="@file.AltText"
+                                 style="max-height:220px;width:auto;border-radius:var(--radius-md)"/>
+                        }
+
+                        <div class="field">
+                            <label>URL</label>
+                            <div class="row">
+                                <input class="input mono grow" value="@file.Url" readonly/>
+                                <button type="button" class="btn btn-secondary" data-copy-url="@file.Url">Copy</button>
+                            </div>
+                        </div>
+
+                        <p class="muted mb-0">
+                            Uploaded @Format.ShortDateTime(file.UploadedAt) UTC ·
+                            @file.ContentType · @Format.FileSize(file.SizeBytes)
+                        </p>
+
+                        <form method="post" asp-page-handler="Rename" class="field">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@file.Id"/>
+                            <label for="name-@file.Id">Rename</label>
+                            <div class="row">
+                                <input class="input grow" id="name-@file.Id" name="name"
+                                       value="@file.DisplayNameWithoutExtension" required/>
+                                <button type="submit" class="btn btn-secondary">Rename</button>
+                            </div>
+                            <p class="field-hint">
+                                The extension stays as <span class="mono">@file.Extension</span>.
+                                Renaming changes the file's URL.
+                            </p>
+                        </form>
+
+                        <form method="post" asp-page-handler="AltText" class="field">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@file.Id"/>
+                            <label for="alt-@file.Id">Alt text</label>
+                            <div class="row">
+                                <input class="input grow" id="alt-@file.Id" name="altText" value="@file.AltText"/>
+                                <button type="submit" class="btn btn-secondary">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-foot">
+                        <form method="post" asp-page-handler="Delete"
+                              onsubmit="return confirm('Delete this file permanently?')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@file.Id"/>
+                            <button type="submit" class="btn btn-ghost danger">Delete file</button>
+                        </form>
+                    </div>
+                </dialog>
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="pagination" aria-label="Pagination">
+            @for (var n = 1; n <= Model.TotalPages; n++)
+            {
+                <a href="@Model.PageHref(n)" class="btn @(n == Model.CurrentPage ? "btn-primary" : "btn-secondary")">@n</a>
+            }
+        </nav>
+    }
+}
+
+@section Scripts {
+    <script src="~/js/media-library.js"></script>
+}

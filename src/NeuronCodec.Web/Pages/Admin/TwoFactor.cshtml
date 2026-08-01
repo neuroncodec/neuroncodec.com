@@ -1,0 +1,43 @@
+@page "/admin/2fa"
+@model NeuronCodec.Web.Pages.Admin.TwoFactorModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Two-factor authentication";
+}
+
+<h1>Two-factor</h1>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-error" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (!Model.UseRecoveryCode)
+{
+    <p>Enter the six-digit code from your authenticator app.</p>
+    @* The field name must match the BindProperty name ("recovery"), not the property name. *@
+    <form method="post" class="form-grid">
+        <input type="hidden" name="recovery" value="false"/>
+        <div class="field">
+            <label for="code" class="sr-only">Authentication code</label>
+            <input class="input code-input" id="code" name="Code" inputmode="numeric"
+                   autocomplete="one-time-code" pattern="[0-9]*" maxlength="7" required autofocus/>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Verify</button>
+    </form>
+    <a href="/admin/2fa?recovery=true" class="btn btn-ghost btn-block">Use a recovery code instead</a>
+}
+else
+{
+    <p>Enter one of the recovery codes you saved when you enrolled. Each code works once.</p>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="recovery" value="true"/>
+        <div class="field">
+            <label for="recovery-code">Recovery code</label>
+            <input class="input mono" id="recovery-code" name="Code" autocomplete="off"
+                   placeholder="xxxxx-xxxxx" required autofocus/>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Verify</button>
+    </form>
+    <a href="/admin/2fa" class="btn btn-ghost btn-block">Use an authenticator code instead</a>
+}

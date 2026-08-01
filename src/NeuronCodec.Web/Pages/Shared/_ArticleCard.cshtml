@@ -1,0 +1,9 @@
+@model ArticleCard
+<a href="@Model.Href" class="card elev-sm article-card">
+    <span class="tag @Model.TagClass article-card-tag">@Model.TagName</span>
+    <h3 class="card-title">@Model.Title</h3>
+    <p class="card-body">@Model.Excerpt</p>
+    <div class="card-meta article-card-meta">
+        <span>@Model.DateLabel</span><span>·</span><span>@Model.ReadLabel</span>
+    </div>
+</a>

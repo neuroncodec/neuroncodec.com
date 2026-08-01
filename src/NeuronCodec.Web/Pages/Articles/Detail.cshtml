@@ -1,0 +1,64 @@
+@page "/articles/{slug}"
+@model NeuronCodec.Web.Pages.Articles.DetailModel
+@{
+    var article = Model.Article!;
+}
+
+<div class="page-narrow">
+    <div class="article-back">
+        <a href="/articles">← All articles</a>
+    </div>
+
+    <header class="article-header">
+        @if (article.Category is not null)
+        {
+            <span class="tag @article.Category.TagClass">@article.Category.Name</span>
+        }
+        <h1>@article.Title</h1>
+        <div class="card-meta">
+            <span>@Format.LongDate(article.PublishedAt ?? article.CreatedAt)</span><span>·</span><span>@article.ReadMinutes min read</span>
+        </div>
+    </header>
+
+    @if (article.FeaturedMedia is not null)
+    {
+        <figure class="article-hero washed">
+            @* Razor drops an attribute whose value is null, so unknown dimensions emit nothing. *@
+            <img src="@article.FeaturedMedia.Url" alt="@article.FeaturedMedia.AltText"
+                 width="@article.FeaturedMedia.Width" height="@article.FeaturedMedia.Height"/>
+        </figure>
+    }
+
+    <article>
+        @if (!string.IsNullOrWhiteSpace(article.Excerpt))
+        {
+            <p class="article-lede">@article.Excerpt</p>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(article.BodyHtml))
+        {
+            <div class="prose">@Html.Raw(article.BodyHtml)</div>
+        }
+        else
+        {
+            <p class="article-stub">Full write-up coming soon.</p>
+        }
+
+        @if (Model.TagNames.Count > 0)
+        {
+            <div class="article-tags">
+                @foreach (var tag in Model.TagNames)
+                {
+                    <span class="tag tag-neutral">@tag</span>
+                }
+            </div>
+        }
+    </article>
+</div>
+
+@section Head {
+    @if (Model.IsPreview)
+    {
+        <meta name="robots" content="noindex,nofollow"/>
+    }
+}

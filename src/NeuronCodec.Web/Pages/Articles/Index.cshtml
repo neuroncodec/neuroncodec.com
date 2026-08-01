@@ -1,0 +1,47 @@
+@page "/articles"
+@model NeuronCodec.Web.Pages.Articles.IndexModel
+
+<div class="page">
+    <section class="hero hero-tight">
+        <span class="eyebrow">Articles</span>
+        <h1>Articles</h1>
+        <p class="hero-lede">Research notes on neuroscience, biotech, and brain-computer interfaces.</p>
+    </section>
+
+    <section class="section-article-list">
+        @if (Model.Items.Count > 0)
+        {
+            <div class="article-grid">
+                @foreach (var article in Model.Items)
+                {
+                    <partial name="_ArticleCard" model="@article"/>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="card elev-sm empty-state">No articles published yet — the first ones are on the way.</div>
+        }
+    </section>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="pagination" aria-label="Pagination">
+            @if (Model.HasPrevious)
+            {
+                <a href="@Model.PageHref(Model.CurrentPage - 1)" class="btn btn-icon btn-secondary" aria-label="Previous page">‹</a>
+            }
+            @for (var n = 1; n <= Model.TotalPages; n++)
+            {
+                var isCurrent = n == Model.CurrentPage;
+                <a href="@Model.PageHref(n)"
+                   class="btn @(isCurrent ? "btn-primary" : "btn-secondary")"
+                   aria-current="@(isCurrent ? "page" : null)">@n</a>
+            }
+            @if (Model.HasNext)
+            {
+                <a href="@Model.PageHref(Model.CurrentPage + 1)" class="btn btn-icon btn-secondary" aria-label="Next page">›</a>
+            }
+        </nav>
+    }
+</div>

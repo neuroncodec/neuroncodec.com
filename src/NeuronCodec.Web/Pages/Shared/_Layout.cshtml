@@ -1,0 +1,83 @@
+@inject SiteSettings Settings
+@{
+    var meta = ViewData["Meta"] as PageMeta ?? new PageMeta { Title = Settings.SiteName };
+    var navCurrent = ViewData["NavCurrent"] as string ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>@meta.Title</title>
+
+    @if (!string.IsNullOrWhiteSpace(meta.Description))
+    {
+        <meta name="description" content="@meta.Description"/>
+    }
+    @if (meta.NoIndex)
+    {
+        <meta name="robots" content="noindex,nofollow"/>
+    }
+    @if (!string.IsNullOrWhiteSpace(meta.CanonicalUrl))
+    {
+        <link rel="canonical" href="@meta.CanonicalUrl"/>
+    }
+
+    <meta property="og:type" content="@meta.OgType"/>
+    <meta property="og:site_name" content="@Settings.SiteName"/>
+    <meta property="og:title" content="@meta.ResolvedOgTitle"/>
+    @if (!string.IsNullOrWhiteSpace(meta.ResolvedOgDescription))
+    {
+        <meta property="og:description" content="@meta.ResolvedOgDescription"/>
+    }
+    @if (!string.IsNullOrWhiteSpace(meta.CanonicalUrl))
+    {
+        <meta property="og:url" content="@meta.CanonicalUrl"/>
+    }
+    @if (!string.IsNullOrWhiteSpace(meta.OgImageUrl))
+    {
+        <meta property="og:image" content="@meta.OgImageUrl"/>
+    }
+
+    <meta name="twitter:card" content="@meta.TwitterCardType"/>
+    @if (!string.IsNullOrWhiteSpace(meta.TwitterSite))
+    {
+        <meta name="twitter:site" content="@meta.TwitterSite"/>
+    }
+    @if (!string.IsNullOrWhiteSpace(meta.TwitterCreator))
+    {
+        <meta name="twitter:creator" content="@meta.TwitterCreator"/>
+    }
+    <meta name="twitter:title" content="@meta.ResolvedOgTitle"/>
+    @if (!string.IsNullOrWhiteSpace(meta.ResolvedOgDescription))
+    {
+        <meta name="twitter:description" content="@meta.ResolvedOgDescription"/>
+    }
+    @if (!string.IsNullOrWhiteSpace(meta.OgImageUrl))
+    {
+        <meta name="twitter:image" content="@meta.OgImageUrl"/>
+    }
+
+    <link rel="icon" type="image/svg+xml" href="~/logo/favicon.svg"/>
+    <link rel="alternate" type="application/rss+xml" title="@Settings.SiteName" href="~/feed.xml"/>
+    <link rel="stylesheet" href="~/ds/styles.css"/>
+    <link rel="stylesheet" href="~/css/site.css"/>
+    @await RenderSectionAsync("Head", required: false)
+
+    @* Written raw so the type attribute stays literal — Razor's attribute encoder would turn
+       the "+" into &#x2B;. The JSON itself is serialised with <, > and & escaped. *@
+    @foreach (var block in meta.JsonLd)
+    {
+        @Html.Raw("<script type=\"application/ld+json\">" + block + "</script>")
+    }
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<partial name="_SiteNav" model="@navCurrent"/>
+<main id="main">
+    @RenderBody()
+</main>
+<partial name="_SiteFooter"/>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

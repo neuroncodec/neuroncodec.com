@@ -1,0 +1,28 @@
+@* The picker dialog. Driven entirely by wwwroot/js/media-picker.js. *@
+<dialog class="modal" id="media-picker" aria-labelledby="media-picker-title">
+    <div class="modal-head">
+        <h2 id="media-picker-title">Media library</h2>
+        <button type="button" class="btn btn-ghost" data-close-dialog>Close</button>
+    </div>
+
+    <div class="modal-body stack">
+        <div class="row">
+            <input class="input grow" type="search" placeholder="Search files" data-picker-search
+                   aria-label="Search the media library"/>
+        </div>
+
+        <div class="row">
+            <input class="input grow" type="file" multiple data-picker-upload aria-label="Files to upload"/>
+            <button type="button" class="btn btn-secondary" data-picker-upload-button>Upload</button>
+        </div>
+
+        <p class="muted mb-0" data-picker-status role="status"></p>
+
+        <div class="media-grid" data-picker-grid></div>
+    </div>
+
+    <div class="modal-foot">
+        <button type="button" class="btn btn-secondary" data-close-dialog>Cancel</button>
+        <button type="button" class="btn btn-primary" data-picker-insert disabled>Use this file</button>
+    </div>
+</dialog>

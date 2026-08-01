@@ -1,0 +1,16 @@
+@model string
+@inject SiteSettings Settings
+@{
+    // An article page keeps "Articles" marked as the current section.
+    string? Current(string section) =>
+        Model == section || (section == "articles" && Model == "article") ? "page" : null;
+}
+<nav class="site-nav">
+    <a class="site-nav-brand" href="/">
+        <img src="~/logo/mark.svg" alt="@Settings.SiteName" width="36" height="31"/>
+        <span class="nav-brand">ncodec</span>
+    </a>
+    <a href="/articles" aria-current="@Current("articles")">Articles</a>
+    <a href="/projects" aria-current="@Current("projects")">Projects</a>
+    <a href="/about" aria-current="@Current("about")">About</a>
+</nav>

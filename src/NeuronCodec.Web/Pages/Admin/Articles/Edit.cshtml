@@ -1,0 +1,270 @@
+@page "/admin/articles/edit"
+@model NeuronCodec.Web.Pages.Admin.Articles.EditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "New article" : "Edit article";
+    ViewData["AdminSection"] = "articles";
+}
+
+<form method="post" id="article-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Input.Id"/>
+
+    <div class="admin-header">
+        <div>
+            <h1>@(Model.IsNew ? "New article" : "Edit article")</h1>
+            @if (Model.UpdatedAt is { } updated)
+            {
+                <p>Last saved @Format.ShortDateTime(updated) UTC.</p>
+            }
+        </div>
+        <div class="admin-header-actions">
+            @if (!Model.IsNew && Model.ExistingSlug is not null)
+            {
+                <a class="btn btn-secondary" href="/articles/@Model.ExistingSlug" target="_blank" rel="noopener">
+                    <partial name="_Icon" model="@("external-link")"/> Preview
+                </a>
+            }
+            <button type="submit" name="action" value="close" class="btn btn-secondary">Save &amp; close</button>
+            <button type="submit" name="action" value="save" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+
+    <div asp-validation-summary="All" class="alert alert-error" role="alert"
+         style="@(ViewData.ModelState.IsValid ? "display:none" : "")"></div>
+
+    <div class="editor-layout">
+        <div class="stack">
+            <div class="panel">
+                <div class="field">
+                    <label asp-for="Input.Title">Title</label>
+                    <input class="input title-input" asp-for="Input.Title" id="article-title"
+                           placeholder="Decoding Synaptic Spike Trains in Real Time" required/>
+                    <span asp-validation-for="Input.Title" class="field-error"></span>
+                </div>
+
+                <div class="field" style="margin-top:var(--space-3)">
+                    <label asp-for="Input.Slug">Permalink</label>
+                    <div class="slug-row">
+                        <span class="slug-prefix mono">/articles/</span>
+                        <input class="input mono" asp-for="Input.Slug" id="article-slug"
+                               placeholder="generated-from-the-title"/>
+                        <button type="button" class="btn btn-secondary" id="slug-from-title">Regenerate</button>
+                    </div>
+                    <p class="field-hint">Leave blank to generate from the title. Changing this breaks existing links.</p>
+                </div>
+
+                <div class="field" style="margin-top:var(--space-3)">
+                    <label asp-for="Input.Excerpt">Excerpt</label>
+                    <textarea class="input" asp-for="Input.Excerpt" rows="3"
+                              placeholder="Shown on article cards and used as the page description."></textarea>
+                    <p class="field-hint">Leave blank to use the opening of the article.</p>
+                    <span asp-validation-for="Input.Excerpt" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Body</h2>
+                    <p>Markdown. Ctrl/Cmd + S saves.</p>
+                </div>
+                <textarea asp-for="Input.BodyMarkdown" id="markdown-editor"></textarea>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Search engines &amp; sharing</h2>
+                    <p>Blank fields fall back to the title and excerpt.</p>
+                </div>
+
+                <div class="stack">
+                    <div class="field">
+                        <label asp-for="Input.MetaTitle">Meta title</label>
+                        <input class="input" asp-for="Input.MetaTitle" maxlength="300"
+                               placeholder="@(string.IsNullOrWhiteSpace(Model.Input.Title) ? "Article title — NeuronCodec" : Model.Input.Title + " — NeuronCodec")"/>
+                        <p class="field-hint">Aim for 50–60 characters.</p>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Input.MetaDescription">Meta description</label>
+                        <textarea class="input" asp-for="Input.MetaDescription" rows="2" maxlength="400"></textarea>
+                        <p class="field-hint">Aim for 150–160 characters.</p>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Input.CanonicalUrl">Canonical URL</label>
+                        <input class="input mono" asp-for="Input.CanonicalUrl" type="url"
+                               placeholder="Leave blank to use this article's own URL"/>
+                        <p class="field-hint">Set this only when the piece was first published somewhere else.</p>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label asp-for="Input.OgTitle">Open Graph title</label>
+                            <input class="input" asp-for="Input.OgTitle" maxlength="300"/>
+                        </div>
+                        <div class="field">
+                            <label asp-for="Input.TwitterCardType">Twitter card</label>
+                            <select class="input" asp-for="Input.TwitterCardType" asp-items="Model.TwitterCardOptions"></select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Input.OgDescription">Open Graph description</label>
+                        <textarea class="input" asp-for="Input.OgDescription" rows="2" maxlength="400"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label>Social share image</label>
+                        <input type="hidden" asp-for="Input.OgImageId" id="og-image-id"/>
+                        <div class="row" id="og-image-slot">
+                            @if (Model.OgImage is not null)
+                            {
+                                <img src="@Model.OgImage.Url" alt="" width="120"
+                                     style="border-radius:var(--radius-sm)"/>
+                                <span class="muted">@Model.OgImage.OriginalName</span>
+                            }
+                            else
+                            {
+                                <span class="muted">Falls back to the featured image, then the site default.</span>
+                            }
+                        </div>
+                        <div class="row" style="margin-top:8px">
+                            <button type="button" class="btn btn-secondary"
+                                    data-pick-media="og-image-id" data-slot="og-image-slot">Choose image</button>
+                            <button type="button" class="btn btn-ghost"
+                                    data-clear-media="og-image-id" data-slot="og-image-slot">Clear</button>
+                        </div>
+                    </div>
+
+                    <label class="checkbox">
+                        <input type="checkbox" asp-for="Input.NoIndex"/>
+                        Ask search engines not to index this article
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <aside class="editor-side">
+            <div class="panel">
+                <div class="panel-head"><h2>Publish</h2></div>
+                <div class="stack">
+                    <div class="field">
+                        <label asp-for="Input.Status">Status</label>
+                        <select class="input" asp-for="Input.Status" id="article-status">
+                            <option value="@ArticleStatus.Draft">Draft</option>
+                            <option value="@ArticleStatus.Published">Published</option>
+                            <option value="@ArticleStatus.Scheduled">Scheduled</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Input.PublishedAt">Publish date (UTC)</label>
+                        <input class="input" asp-for="Input.PublishedAt" type="datetime-local" step="60"/>
+                        <p class="field-hint" id="publish-hint">Shown on the article and used for ordering.</p>
+                        <span asp-validation-for="Input.PublishedAt" class="field-error"></span>
+                    </div>
+
+                    <div class="row">
+                        <button type="submit" name="action" value="save" class="btn btn-primary grow">Save</button>
+                        <button type="submit" name="action" value="view" class="btn btn-secondary">Save &amp; view</button>
+                    </div>
+
+                    @if (!Model.IsNew)
+                    {
+                        <button type="submit" formnovalidate asp-page-handler="Delete" class="btn btn-ghost danger"
+                                onclick="return confirm('Delete this article? This cannot be undone.')">
+                            Delete article
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h2>Organisation</h2></div>
+                <div class="stack">
+                    <div class="field">
+                        <label asp-for="Input.CategoryId">Category</label>
+                        <select class="input" asp-for="Input.CategoryId">
+                            <option value="">No category</option>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                        <p class="field-hint">
+                            Sets the pill on article cards.
+                            <a href="/admin/taxonomy" target="_blank" rel="noopener">Manage categories</a>.
+                        </p>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Input.Tags">Tags</label>
+                        <input class="input" asp-for="Input.Tags" list="tag-suggestions"
+                               placeholder="spike sorting, electrodes"/>
+                        <datalist id="tag-suggestions">
+                            @foreach (var tag in Model.AllTagNames)
+                            {
+                                <option value="@tag"></option>
+                            }
+                        </datalist>
+                        <p class="field-hint">Comma-separated. New tags are created automatically.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h2>Featured image</h2></div>
+                <input type="hidden" asp-for="Input.FeaturedMediaId" id="featured-media-id"/>
+                <div id="featured-media-slot" class="stack-sm">
+                    @if (Model.FeaturedMedia is not null)
+                    {
+                        <img src="@Model.FeaturedMedia.Url" alt=""
+                             style="border-radius:var(--radius-md);width:100%"/>
+                        <span class="muted">@Model.FeaturedMedia.OriginalName</span>
+                    }
+                    else
+                    {
+                        <span class="muted">No featured image.</span>
+                    }
+                </div>
+                <div class="row" style="margin-top:10px">
+                    <button type="button" class="btn btn-secondary"
+                            data-pick-media="featured-media-id" data-slot="featured-media-slot">Choose image</button>
+                    <button type="button" class="btn btn-ghost"
+                            data-clear-media="featured-media-id" data-slot="featured-media-slot">Clear</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h2>Reading time</h2></div>
+                <label class="checkbox">
+                    <input type="checkbox" asp-for="Input.ReadMinutesOverridden" id="read-override"/>
+                    Set manually
+                </label>
+                <div class="field" style="margin-top:10px">
+                    <label asp-for="Input.ReadMinutes">Minutes</label>
+                    <input class="input" asp-for="Input.ReadMinutes" type="number" min="1" max="240"
+                           id="read-minutes"/>
+                    <p class="field-hint">Estimated at 200 words per minute when not set manually.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+</form>
+
+<partial name="_MediaPickerDialog"/>
+
+@section Head {
+    <link rel="stylesheet" href="~/lib/easymde/dist/easymde.min.css"/>
+    <link rel="stylesheet" href="~/lib/highlightjs/styles/github-dark.min.css"/>
+}
+
+@section Scripts {
+    <script src="~/lib/easymde/dist/easymde.min.js"></script>
+    <script src="~/lib/marked/marked.min.js"></script>
+    <script src="~/lib/dompurify/dist/purify.min.js"></script>
+    <script src="~/lib/highlightjs/highlight.min.js"></script>
+    <script src="~/js/media-picker.js"></script>
+    <script src="~/js/media-slots.js"></script>
+    <script src="~/js/article-editor.js"></script>
+}

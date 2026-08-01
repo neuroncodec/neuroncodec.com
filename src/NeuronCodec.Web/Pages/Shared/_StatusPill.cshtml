@@ -1,0 +1,10 @@
+@model Article
+@{
+    var (cssClass, label) = Model.Status switch
+    {
+        ArticleStatus.Published => ("status-published", "Published"),
+        ArticleStatus.Scheduled => ("status-scheduled", "Scheduled"),
+        _ => ("status-draft", "Draft"),
+    };
+}
+<span class="status-pill @cssClass">@label</span>

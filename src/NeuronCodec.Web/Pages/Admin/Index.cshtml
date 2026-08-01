@@ -1,0 +1,128 @@
+@page "/admin"
+@model NeuronCodec.Web.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["AdminSection"] = "dashboard";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>Dashboard</h1>
+        <p>Signed in as @Model.Username.</p>
+    </div>
+    <div class="admin-header-actions">
+        <a href="/admin/articles/edit" class="btn btn-primary">
+            <partial name="_Icon" model="@("plus")"/> New article
+        </a>
+    </div>
+</div>
+
+@if (!Model.TwoFactorEnabled)
+{
+    <div class="alert alert-error">
+        Two-factor authentication is off. <a href="/admin/security">Turn it on</a> to protect the admin area.
+    </div>
+}
+else if (Model.RecoveryCodesRemaining <= 2)
+{
+    <div class="alert alert-info">
+        Only @Model.RecoveryCodesRemaining recovery code(s) left.
+        <a href="/admin/security">Generate a new set</a>.
+    </div>
+}
+
+<div class="stat-grid">
+    <div class="card elev-sm stat-card">
+        <span class="card-kicker">Published</span>
+        <span class="stat-value">@Model.PublishedCount</span>
+    </div>
+    <div class="card elev-sm stat-card">
+        <span class="card-kicker">Drafts</span>
+        <span class="stat-value">@Model.DraftCount</span>
+    </div>
+    <div class="card elev-sm stat-card">
+        <span class="card-kicker">Scheduled</span>
+        <span class="stat-value">@Model.ScheduledCount</span>
+    </div>
+    <div class="card elev-sm stat-card">
+        <span class="card-kicker">Media files</span>
+        <span class="stat-value">@Model.MediaCount</span>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2>Recently edited</h2>
+        <a href="/admin/articles" class="btn btn-ghost">All articles →</a>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="cell-wrap">Title</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.Recent.Count == 0)
+            {
+                <tr>
+                    <td colspan="4" class="empty-row">
+                        No articles yet. <a href="/admin/articles/edit">Write the first one →</a>
+                    </td>
+                </tr>
+            }
+            @foreach (var article in Model.Recent)
+            {
+                <tr>
+                    <td class="cell-wrap">
+                        <a class="row-title" href="/admin/articles/edit?id=@article.Id">@article.Title</a>
+                        <div class="row-sub mono">/articles/@article.Slug</div>
+                    </td>
+                    <td><partial name="_StatusPill" model="@article"/></td>
+                    <td class="muted">@Format.ShortDateTime(article.UpdatedAt)</td>
+                    <td class="row-actions">
+                        <a class="btn btn-secondary" href="/admin/articles/edit?id=@article.Id">Edit</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (Model.UpcomingScheduled.Count > 0)
+{
+    <div class="panel">
+        <div class="panel-head">
+            <h2>Scheduled to publish</h2>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th class="cell-wrap">Title</th>
+                    <th>Goes live</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var article in Model.UpcomingScheduled)
+                {
+                    <tr>
+                        <td class="cell-wrap">
+                            <a class="row-title" href="/admin/articles/edit?id=@article.Id">@article.Title</a>
+                        </td>
+                        <td class="muted">@Format.ShortDateTime(article.PublishedAt!.Value)</td>
+                        <td class="row-actions">
+                            <a class="btn btn-secondary" href="/admin/articles/edit?id=@article.Id">Edit</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

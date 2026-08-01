@@ -1,0 +1,39 @@
+@page "/"
+@model NeuronCodec.Web.Pages.IndexModel
+
+<div class="page">
+    <section class="hero">
+        <span class="eyebrow">Open-source foundation</span>
+        <h1>Neuroscience, biotech, and brain-computer interfaces.</h1>
+        <p class="hero-lede">Research notes and open-source work on neural decoding, memory-write interfaces, and laboratory automation with AI agents.</p>
+    </section>
+
+    <section class="section-articles">
+        <div class="section-head">
+            <h2>Latest articles</h2>
+            <a href="/articles" class="btn btn-ghost">View all articles →</a>
+        </div>
+        @if (Model.Latest.Count > 0)
+        {
+            <div class="article-grid">
+                @foreach (var article in Model.Latest)
+                {
+                    <partial name="_ArticleCard" model="@article"/>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="card elev-sm empty-state">No articles published yet — the first ones are on the way.</div>
+        }
+    </section>
+
+    <section class="section-projects">
+        <h2>Projects</h2>
+        <div class="card elev-sm feature-card">
+            <h3>Coming soon</h3>
+            <p>NeuronCodec's open-source projects are in development. This page will list repositories and releases as they're published.</p>
+            <a href="/projects" class="btn btn-secondary">View projects →</a>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,89 @@
+@inject SiteSettings Settings
+@{
+    var section = ViewData["AdminSection"] as string ?? "";
+    var title = ViewData["Title"] as string ?? "Admin";
+    string? Current(string name) => section == name ? "page" : null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="robots" content="noindex,nofollow"/>
+    <title>@title — @Settings.SiteName admin</title>
+    <link rel="icon" type="image/svg+xml" href="~/logo/favicon.svg"/>
+    <link rel="stylesheet" href="~/ds/styles.css"/>
+    <link rel="stylesheet" href="~/css/site.css"/>
+    <link rel="stylesheet" href="~/css/admin.css"/>
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body>
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <a class="admin-brand" href="/admin">
+            <img src="~/logo/mark.svg" alt="" width="30" height="26"/>
+            <span>
+                <span class="nav-brand">ncodec</span>
+                <small>Admin</small>
+            </span>
+        </a>
+
+        <nav class="admin-nav">
+            <a href="/admin" aria-current="@Current("dashboard")">
+                <partial name="_Icon" model="@("layout-dashboard")"/> Dashboard
+            </a>
+
+            <span class="admin-nav-group">Content</span>
+            <a href="/admin/articles" aria-current="@Current("articles")">
+                <partial name="_Icon" model="@("file-text")"/> Articles
+            </a>
+            <a href="/admin/taxonomy" aria-current="@Current("taxonomy")">
+                <partial name="_Icon" model="@("tags")"/> Categories &amp; tags
+            </a>
+            <a href="/admin/media" aria-current="@Current("media")">
+                <partial name="_Icon" model="@("image")"/> Media
+            </a>
+
+            <span class="admin-nav-group">Site</span>
+            <a href="/admin/seo" aria-current="@Current("seo")">
+                <partial name="_Icon" model="@("search")"/> SEO
+            </a>
+            <a href="/admin/security" aria-current="@Current("security")">
+                <partial name="_Icon" model="@("shield")"/> Security
+            </a>
+        </nav>
+
+        <div class="admin-sidebar-foot">
+            <a href="/" target="_blank" rel="noopener" class="btn btn-secondary btn-block">View site →</a>
+            <form method="post" action="/admin/logout">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-ghost btn-block">Sign out</button>
+            </form>
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        @{
+            var success = TempData["Success"] as string;
+            var error = TempData["Error"] as string;
+            var info = TempData["Info"] as string;
+        }
+        @if (!string.IsNullOrEmpty(success))
+        {
+            <div class="alert alert-success" role="status">@success</div>
+        }
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-error" role="alert">@error</div>
+        }
+        @if (!string.IsNullOrEmpty(info))
+        {
+            <div class="alert alert-info" role="status">@info</div>
+        }
+
+        @RenderBody()
+    </div>
+</div>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

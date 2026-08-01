@@ -1,0 +1,125 @@
+@page "/admin/articles"
+@model NeuronCodec.Web.Pages.Admin.Articles.IndexModel
+@{
+    ViewData["Title"] = "Articles";
+    ViewData["AdminSection"] = "articles";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>Articles</h1>
+        <p>@Model.TotalCount article@(Model.TotalCount == 1 ? "" : "s") in total.</p>
+    </div>
+    <div class="admin-header-actions">
+        <a href="/admin/articles/edit" class="btn btn-primary">
+            <partial name="_Icon" model="@("plus")"/> New article
+        </a>
+    </div>
+</div>
+
+<form method="get" class="toolbar">
+    <div class="field field-grow">
+        <label for="q">Search</label>
+        <input class="input" id="q" name="q" value="@Model.Query" placeholder="Title, slug or excerpt"/>
+    </div>
+    <div class="field">
+        <label for="status">Status</label>
+        <select class="input" id="status" name="status">
+            <option value="">All statuses</option>
+            @foreach (var status in Model.StatusOptions)
+            {
+                <option value="@status" selected="@(Model.Status == status)">@status</option>
+            }
+        </select>
+    </div>
+    <div class="field">
+        <label for="category">Category</label>
+        <select class="input" id="category" name="category">
+            <option value="">All categories</option>
+            @foreach (var category in Model.Categories)
+            {
+                <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Name</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-secondary">Filter</button>
+    @if (Model.HasFilters)
+    {
+        <a href="/admin/articles" class="btn btn-ghost">Clear</a>
+    }
+</form>
+
+<div class="panel panel-flush">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="cell-wrap">Title</th>
+                <th>Status</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.Items.Count == 0)
+            {
+                <tr>
+                    <td colspan="5" class="empty-row">
+                        @(Model.HasFilters ? "No articles match those filters." : "No articles yet.")
+                        <a href="/admin/articles/edit">Write one →</a>
+                    </td>
+                </tr>
+            }
+            @foreach (var article in Model.Items)
+            {
+                <tr>
+                    <td class="cell-wrap">
+                        <a class="row-title" href="/admin/articles/edit?id=@article.Id">@article.Title</a>
+                        <div class="row-sub mono">/articles/@article.Slug</div>
+                    </td>
+                    <td><partial name="_StatusPill" model="@article"/></td>
+                    <td>
+                        @if (article.Category is not null)
+                        {
+                            <span class="tag @article.Category.TagClass">@article.Category.Name</span>
+                        }
+                        else
+                        {
+                            <span class="muted">—</span>
+                        }
+                    </td>
+                    <td class="muted">
+                        @(article.PublishedAt is { } published ? Format.ShortDateTime(published) : "—")
+                    </td>
+                    <td class="row-actions">
+                        <a class="btn btn-secondary" href="/articles/@article.Slug" target="_blank" rel="noopener">View</a>
+                        <a class="btn btn-secondary" href="/admin/articles/edit?id=@article.Id">Edit</a>
+                        <form method="post" asp-page-handler="Duplicate" class="nowrap">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@article.Id"/>
+                            <button type="submit" class="btn btn-secondary">Duplicate</button>
+                        </form>
+                        <form method="post" asp-page-handler="Delete" class="nowrap"
+                              onsubmit="return confirm('Delete “@article.Title”? This cannot be undone.')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@article.Id"/>
+                            <button type="submit" class="btn btn-ghost danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="pagination" aria-label="Pagination">
+        @for (var n = 1; n <= Model.TotalPages; n++)
+        {
+            <a href="@Model.PageHref(n)" class="btn @(n == Model.CurrentPage ? "btn-primary" : "btn-secondary")">@n</a>
+        }
+    </nav>
+}
