@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-6ab72f85-d4da-467f-a046-217180b3597f/styles.css">
+<script src="_ds/organic-6ab72f85-d4da-467f-a046-217180b3597f/_ds_bundle.js"></script>
+<link rel="icon" type="image/svg+xml" href="logo/favicon.svg">
+<title>NeuronCodec — open-source neuroscience &amp; BCI research</title>
+</helmet>
+<dc-import name="SiteNav" current="home" hint-size="100%,80px"></dc-import>
+<main style="max-width:1120px;margin:0 auto;padding:0 clamp(20px,4vw,48px)">
+
+  <section style="padding:56px 0 44px;max-width:660px">
+    <span style="display:block;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin-bottom:14px">Open-source foundation</span>
+    <h1 style="margin:0 0 14px">Neuroscience, biotech, and brain-computer interfaces.</h1>
+    <p style="font-size:17px;line-height:1.6;opacity:0.75;margin:0">Research notes and open-source work on neural decoding, memory-write interfaces, and laboratory automation with AI agents.</p>
+  </section>
+
+  <section style="padding:8px 0 56px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px">
+      <h2 style="margin:0">Latest articles</h2>
+      <a href="Articles.dc.html" class="btn btn-ghost">View all articles →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">
+      <sc-for list="{{ latest }}" as="art" hint-placeholder-count="6">
+        <a href="{{ art.href }}" class="card elev-sm" style="text-decoration:none;color:inherit;transition:box-shadow .15s ease, transform .15s ease" style-hover="box-shadow:var(--shadow-md);transform:translateY(-2px)">
+          <span class="tag {{ art.tagClass }}" style="align-self:flex-start;white-space:nowrap">{{ art.tag }}</span>
+          <h3 class="card-title">{{ art.title }}</h3>
+          <p class="card-body">{{ art.excerpt }}</p>
+          <div class="card-meta" style="white-space:nowrap"><span>{{ art.dateLabel }}</span><span>·</span><span>{{ art.readLabel }}</span></div>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding:8px 0 72px">
+    <h2 style="margin:0 0 20px">Projects</h2>
+    <div class="card elev-sm" style="padding:36px clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:10px;align-items:flex-start;border-radius:calc(var(--radius-lg) * 1.15)">
+      <h3 style="margin:0">Coming soon</h3>
+      <p style="margin:0;opacity:0.75;max-width:58ch;font-size:15px;line-height:1.6">NeuronCodec's open-source projects are in development. This page will list repositories and releases as they're published.</p>
+      <a href="Projects.dc.html" class="btn btn-secondary" style="margin-top:6px">View projects →</a>
+    </div>
+  </section>
+
+</main>
+<dc-import name="SiteFooter" hint-size="100%,100px"></dc-import>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { articles: [] };
+  componentDidMount() {
+    import('./data/articles.js').then(m => this.setState({ articles: m.articles }));
+  }
+  formatDate(iso) {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  renderVals() {
+    const latest = this.state.articles.slice(0, 6).map(a => ({
+      ...a,
+      href: 'Article.dc.html?slug=' + a.slug,
+      dateLabel: this.formatDate(a.date),
+      readLabel: a.readMinutes + ' min read',
+    }));
+    return { latest };
+  }
+}
+
+</script>
+</body>
+</html>

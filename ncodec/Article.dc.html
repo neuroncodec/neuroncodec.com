@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-6ab72f85-d4da-467f-a046-217180b3597f/styles.css">
+<script src="_ds/organic-6ab72f85-d4da-467f-a046-217180b3597f/_ds_bundle.js"></script>
+<link rel="icon" type="image/svg+xml" href="logo/favicon.svg">
+<title>Article — NeuronCodec</title>
+</helmet>
+<dc-import name="SiteNav" current="article" hint-size="100%,80px"></dc-import>
+<main style="max-width:720px;margin:0 auto;padding:0 clamp(20px,4vw,48px) 96px">
+
+  <sc-if value="{{ found }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:36px 0 0">
+      <a href="Articles.dc.html" style="font-size:13px;color:var(--color-text);text-decoration:none;opacity:0.6" style-hover="opacity:1;color:var(--color-accent-700)">← All articles</a>
+    </div>
+    <header style="padding:20px 0 32px;border-bottom:1px solid var(--color-divider);margin-bottom:36px">
+      <span class="tag {{ article.tagClass }}" style="display:inline-flex;margin-bottom:16px;white-space:nowrap">{{ article.tag }}</span>
+      <h1 style="margin:0 0 16px">{{ article.title }}</h1>
+      <div class="card-meta" style="font-size:13px;white-space:nowrap"><span>{{ article.dateLabel }}</span><span>·</span><span>{{ article.readLabel }}</span></div>
+    </header>
+    <article>
+      <p style="font-size:19px;line-height:1.6;opacity:0.85;margin:0 0 28px">{{ article.excerpt }}</p>
+      <sc-for list="{{ article.bodyBlocks }}" as="block" hint-placeholder-count="6">
+        <sc-if value="{{ block.isHeading }}" hint-placeholder-val="{{ false }}">
+          <h2 style="margin:40px 0 16px">{{ block.text }}</h2>
+        </sc-if>
+        <sc-if value="{{ block.isPara }}" hint-placeholder-val="{{ true }}">
+          <p style="font-size:17px;line-height:1.75;margin:0 0 22px;opacity:0.88">{{ block.text }}</p>
+        </sc-if>
+      </sc-for>
+      <sc-if value="{{ article.isStub }}" hint-placeholder-val="{{ false }}">
+        <p style="font-size:15px;font-style:italic;opacity:0.55;margin-top:8px">Full write-up coming soon.</p>
+      </sc-if>
+    </article>
+  </sc-if>
+
+  <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:96px 0;text-align:center">
+      <h1 style="margin:0 0 12px">Article not found</h1>
+      <a href="Articles.dc.html" style="color:var(--color-accent-700)" style-hover="color:var(--color-accent)">Back to all articles</a>
+    </div>
+  </sc-if>
+
+</main>
+<dc-import name="SiteFooter" hint-size="100%,100px"></dc-import>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    articles: [],
+    loaded: false,
+    slug: new URLSearchParams(window.location.search).get('slug') || '',
+  };
+  componentDidMount() {
+    import('./data/articles.js').then(m => {
+      this.setState({ articles: m.articles, loaded: true });
+      const match = m.articles.find(a => a.slug === this.state.slug);
+      document.title = (match ? match.title : 'Article not found') + ' — NeuronCodec';
+    });
+  }
+  formatDate(iso) {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  renderVals() {
+    if (!this.state.loaded) {
+      return { found: false, notFound: false, article: null };
+    }
+    const match = this.state.articles.find(a => a.slug === this.state.slug);
+    if (!match) {
+      return { found: false, notFound: true, article: null };
+    }
+    const bodyBlocks = (match.body || []).map(b => ({
+      text: b.text,
+      isHeading: b.type === 'h2',
+      isPara: b.type === 'p',
+    }));
+    return {
+      found: true,
+      notFound: false,
+      article: {
+        ...match,
+        dateLabel: this.formatDate(match.date),
+        readLabel: match.readMinutes + ' min read',
+        bodyBlocks,
+        isStub: !match.body || match.body.length === 0,
+      },
+    };
+  }
+}
+
+</script>
+</body>
+</html>

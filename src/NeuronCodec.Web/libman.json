@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "defaultProvider": "jsdelivr",
+  "libraries": [
+    {
+      "library": "easymde@2.20.0",
+      "destination": "wwwroot/lib/easymde/",
+      "files": [
+        "dist/easymde.min.js",
+        "dist/easymde.min.css",
+        "LICENSE"
+      ]
+    },
+    {
+      "library": "@highlightjs/cdn-assets@11.11.1",
+      "destination": "wwwroot/lib/highlightjs/",
+      "files": [
+        "highlight.min.js",
+        "styles/github-dark.min.css",
+        "LICENSE"
+      ]
+    },
+    {
+      "library": "marked@15.0.7",
+      "destination": "wwwroot/lib/marked/",
+      "files": [
+        "marked.min.js",
+        "LICENSE.md"
+      ]
+    },
+    {
+      "library": "dompurify@3.2.4",
+      "destination": "wwwroot/lib/dompurify/",
+      "files": [
+        "dist/purify.min.js",
+        "LICENSE"
+      ]
+    }
+  ]
+}

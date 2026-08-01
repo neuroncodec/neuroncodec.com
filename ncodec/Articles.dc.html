@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-6ab72f85-d4da-467f-a046-217180b3597f/styles.css">
+<script src="_ds/organic-6ab72f85-d4da-467f-a046-217180b3597f/_ds_bundle.js"></script>
+<link rel="icon" type="image/svg+xml" href="logo/favicon.svg">
+<title>Articles — NeuronCodec</title>
+</helmet>
+<dc-import name="SiteNav" current="articles" hint-size="100%,80px"></dc-import>
+<main style="max-width:1120px;margin:0 auto;padding:0 clamp(20px,4vw,48px)">
+
+  <section style="padding:56px 0 40px;max-width:660px">
+    <span style="display:block;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin-bottom:14px">Articles</span>
+    <h1 style="margin:0 0 14px">Articles</h1>
+    <p style="font-size:17px;line-height:1.6;opacity:0.75;margin:0">Research notes on neuroscience, biotech, and brain-computer interfaces.</p>
+  </section>
+
+  <section style="padding:0 0 16px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">
+      <sc-for list="{{ pageItems }}" as="art" hint-placeholder-count="3">
+        <a href="{{ art.href }}" class="card elev-sm" style="text-decoration:none;color:inherit;transition:box-shadow .15s ease, transform .15s ease" style-hover="box-shadow:var(--shadow-md);transform:translateY(-2px)">
+          <span class="tag {{ art.tagClass }}" style="align-self:flex-start;white-space:nowrap">{{ art.tag }}</span>
+          <h3 class="card-title">{{ art.title }}</h3>
+          <p class="card-body">{{ art.excerpt }}</p>
+          <div class="card-meta" style="white-space:nowrap"><span>{{ art.dateLabel }}</span><span>·</span><span>{{ art.readLabel }}</span></div>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <nav aria-label="Pagination" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:48px 0 72px">
+    <sc-if value="{{ hasPrev }}" hint-placeholder-val="{{ false }}">
+      <a href="{{ prevHref }}" class="btn btn-icon btn-secondary" aria-label="Previous page">‹</a>
+    </sc-if>
+    <sc-for list="{{ pageNumbers }}" as="p" hint-placeholder-count="3">
+      <a href="{{ p.href }}" class="{{ p.btnClass }}" style="min-width:40px;text-align:center">{{ p.label }}</a>
+    </sc-for>
+    <sc-if value="{{ hasNext }}" hint-placeholder-val="{{ true }}">
+      <a href="{{ nextHref }}" class="btn btn-icon btn-secondary" aria-label="Next page">›</a>
+    </sc-if>
+  </nav>
+
+</main>
+<dc-import name="SiteFooter" hint-size="100%,100px"></dc-import>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    articles: [],
+    page: Math.max(1, parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10) || 1),
+  };
+  componentDidMount() {
+    import('./data/articles.js').then(m => this.setState({ articles: m.articles }));
+  }
+  formatDate(iso) {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  renderVals() {
+    const PER_PAGE = 3;
+    const all = this.state.articles;
+    const totalPages = Math.max(1, Math.ceil(all.length / PER_PAGE));
+    const page = Math.min(this.state.page, totalPages);
+    const start = (page - 1) * PER_PAGE;
+    const pageItems = all.slice(start, start + PER_PAGE).map(a => ({
+      ...a,
+      href: 'Article.dc.html?slug=' + a.slug,
+      dateLabel: this.formatDate(a.date),
+      readLabel: a.readMinutes + ' min read',
+    }));
+    const pageNumbers = Array.from({ length: totalPages }, (_, i) => {
+      const n = i + 1;
+      return { label: String(n), href: 'Articles.dc.html?page=' + n, btnClass: n === page ? 'btn btn-primary' : 'btn btn-secondary' };
+    });
+    return {
+      pageItems,
+      pageNumbers,
+      hasPrev: page > 1,
+      hasNext: page < totalPages,
+      prevHref: 'Articles.dc.html?page=' + (page - 1),
+      nextHref: 'Articles.dc.html?page=' + (page + 1),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
