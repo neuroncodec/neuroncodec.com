@@ -1,0 +1,30 @@
+# Build output
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Local runtime state — the container gets its own volumes
+**/.runtime/
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# VCS and tooling
+.git/
+.github/
+.gitignore
+.dockerignore
+.vs/
+.vscode/
+.idea/
+**/*.user
+**/*.suo
+
+# Docs and design sources that the image does not need
+README.md
+LICENSE
+docker-compose*.yml
+Dockerfile*
+ncodec/
+ncodec.zip

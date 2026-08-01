@@ -1,0 +1,32 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+publish/
+*.user
+*.suo
+
+# Local runtime state. The app writes its SQLite database, Data Protection key ring and
+# uploaded media here; in Docker these live on mounted volumes instead.
+**/.runtime/
+*.db
+*.db-shm
+*.db-wal
+
+# Data Protection key rings are private keys — never commit one.
+**/keys/key-*.xml
+
+# Local secrets and overrides
+.env
+*.local.json
+appsettings.*.Local.json
+
+# Editors
+.vs/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Design sources kept outside version control
+ncodec.zip

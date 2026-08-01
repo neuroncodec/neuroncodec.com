@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NeuronCodec.Web/NeuronCodec.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NeuronCodec.Web.Tests/NeuronCodec.Web.Tests.csproj" />
+  </Folder>
+</Solution>
