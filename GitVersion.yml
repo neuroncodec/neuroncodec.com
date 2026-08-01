@@ -1,0 +1,45 @@
+# GitVersion configuration. `dotnet gitversion` derives the version from tags and branch
+# history; CI takes AssemblySemVer from its output and uses it as the Docker image tag.
+mode: ContinuousDelivery
+
+# Applies until the first version tag exists.
+next-version: 0.1.0
+
+# Loose, so an untagged repo can still resolve next-version before the first tag is cut.
+semantic-version-format: Loose
+
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatchTag
+assembly-informational-format: '{InformationalVersion}'
+
+# Matches tags written as either "1.2.3" or "v1.2.3".
+tag-prefix: '[vV]?'
+
+# Conventional Commits drive the bump: feat -> minor, fix/chore/etc -> patch,
+# and a "BREAKING CHANGE" footer or a "!" marker -> major.
+major-version-bump-message: '\+semver:\s?(breaking|major)|(^|\n)[a-zA-Z]+(\([^)]*\))?!:|BREAKING[ -]CHANGE'
+minor-version-bump-message: '\+semver:\s?(feature|minor)|(^|\n)feat(\([^)]*\))?:'
+patch-version-bump-message: '\+semver:\s?(fix|patch)|(^|\n)(fix|perf|refactor|chore|docs|style|test|build|ci)(\([^)]*\))?:'
+commit-message-incrementing: Enabled
+
+branches:
+  main:
+    regex: ^master$|^main$
+    label: ''
+    increment: Patch
+    is-main-branch: true
+
+  feature:
+    regex: ^features?[/-](?<BranchName>.+)
+    label: '{BranchName}'
+    increment: Minor
+    source-branches: ['main']
+
+  pull-request:
+    regex: ^(pull|pull\-requests|pr)[/-]
+    label: pr
+    increment: Inherit
+    source-branches: ['main', 'feature']
+
+ignore:
+  sha: []
