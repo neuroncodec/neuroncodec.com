@@ -107,6 +107,40 @@ The container serves plain HTTP on `8080` and honours `X-Forwarded-For` / `X-For
 so terminate TLS at your proxy and set `NCODEC_BASE_URL` to the public origin — that value is
 what canonical links, the sitemap and share tags use.
 
+### Behind a Cloudflare Tunnel
+
+Cloudflare terminates TLS and forwards plain HTTP to the container, so the origin never sees an
+`https://` request. **`NCODEC_BASE_URL` is not optional in this setup**: without it every
+canonical URL, `<loc>` in the sitemap and `og:url` would advertise the internal hostname the
+tunnel connected to.
+
+```bash
+NCODEC_BASE_URL=https://neuroncodec.com
+```
+
+Point the tunnel at the service over the compose network rather than a published port, and drop
+the `ports:` mapping so the origin is not reachable except through Cloudflare:
+
+```yaml
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in .env}
+    depends_on:
+      - web
+```
+
+With the tunnel's public hostname routed to `http://web:8080`. Two things to check on the
+Cloudflare side:
+
+- **Pick one canonical hostname.** Redirect `www` to the apex (or the reverse) with a redirect
+  rule. The app always emits `NCODEC_BASE_URL` in its canonical tag, so search engines settle on
+  one address either way, but a redirect avoids serving the same page on two hostnames.
+- **Do not enable Cloudflare's HTML minification or Rocket Loader on `/admin`.** The editor
+  mounts against specific element ids and Rocket Loader defers scripts in a way that breaks it.
+
 ## Environment variables
 
 Configuration binds from `appsettings.json`, overridden by environment variables. Nested keys
@@ -138,11 +172,17 @@ Anything set through Admin → SEO is stored in the database and takes precedenc
   a minute later, so publication never depends on that job running.
 - **Media** — drag-and-drop upload, rename, alt text, copy URL, delete. Deleting is refused
   while an article still references the file. The same library backs the picker in the editor.
-- **SEO** — site defaults, share image, structured-data fields, `robots.txt` additions, and a
-  sitemap toggle. Articles emit `BlogPosting` and `BreadcrumbList` JSON-LD; the home page emits
-  `WebSite` and `Organization`.
-- **Security** — password change and TOTP two-factor with QR enrolment and ten single-use
-  recovery codes.
+- **SEO** — split into Identity (name, tagline, canonical base URL, default description),
+  Sharing (default share image, Twitter handles), Structured data (organisation details and
+  `sameAs` profile URLs) and Crawling (sitemap toggle, `robots.txt` additions). Articles emit
+  `BlogPosting` and `BreadcrumbList` JSON-LD plus `article:published_time` / `article:modified_time`;
+  the home page emits `WebSite` and `Organization`.
+- **Security** — split into Password, Two-factor (QR enrolment) and Recovery codes (ten
+  single-use codes).
+
+Sections with more than one concern are split into sub-pages, and the sidebar groups them into
+collapsible sections built on `<details>` — so they fold without script and the group holding
+the current page opens automatically.
 
 Drafts and not-yet-due scheduled articles return 404 to the public but stay reachable for a
 signed-in admin, which is what the editor's Preview link uses.

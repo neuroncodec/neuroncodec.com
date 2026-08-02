@@ -84,6 +84,8 @@ public class SeoBuilder(SiteSettings settings, AppDbContext db, IHttpContextAcce
 
     public PageMeta ForArticle(Article article, IEnumerable<string> tagNames)
     {
+        // Materialised once — the list is read by both the meta tags and the JSON-LD below.
+        var tags = tagNames as IReadOnlyList<string> ?? [.. tagNames];
         var path = $"/articles/{article.Slug}";
         var description = FirstNonBlank(article.MetaDescription, article.Excerpt,
             settings.Get(SettingKeys.DefaultMetaDescription));
@@ -107,10 +109,20 @@ public class SeoBuilder(SiteSettings settings, AppDbContext db, IHttpContextAcce
         };
 
         var image = article.OgImage ?? article.FeaturedMedia;
-        if (image is not null) meta.OgImageUrl = Absolute(image.Url);
+        if (image is not null)
+        {
+            meta.OgImageUrl = Absolute(image.Url);
+            meta.OgImageAlt = image.AltText;
+        }
+
         ApplyDefaultOgImage(meta);
 
-        meta.JsonLd.Add(ArticleJsonLd(article, tagNames, Absolute(path), meta.OgImageUrl));
+        meta.PublishedTime = article.PublishedAt;
+        meta.ModifiedTime = article.UpdatedAt;
+        meta.Section = article.Category?.Name;
+        meta.Tags = tags;
+
+        meta.JsonLd.Add(ArticleJsonLd(article, tags, Absolute(path), meta.OgImageUrl));
         meta.JsonLd.Add(BreadcrumbJsonLd(article));
         return meta;
     }
@@ -149,7 +161,7 @@ public class SeoBuilder(SiteSettings settings, AppDbContext db, IHttpContextAcce
         }
     }
 
-    private string WebSiteJsonLd() => JsonSerializer.Serialize(new Dictionary<string, object?>
+    private string WebSiteJsonLd() => Node(new Dictionary<string, object?>
     {
         ["@context"] = "https://schema.org",
         ["@type"] = "WebSite",
@@ -162,19 +174,26 @@ public class SeoBuilder(SiteSettings settings, AppDbContext db, IHttpContextAcce
             ["target"] = $"{BaseUrl}/articles?q={{search_term_string}}",
             ["query-input"] = "required name=search_term_string",
         },
-    }, JsonOptions);
+    });
 
     private string OrganizationJsonLd()
     {
         var logo = settings.Get(SettingKeys.OrganizationLogoUrl);
-        return JsonSerializer.Serialize(new Dictionary<string, object?>
+        var sameAs = (settings.Get(SettingKeys.OrganizationSameAs) ?? "")
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(IsAbsoluteHttpUrl)
+            .ToArray();
+
+        return Node(new Dictionary<string, object?>
         {
             ["@context"] = "https://schema.org",
             ["@type"] = "Organization",
             ["name"] = settings.Get(SettingKeys.OrganizationName, settings.SiteName),
             ["url"] = BaseUrl,
             ["logo"] = string.IsNullOrWhiteSpace(logo) ? Absolute("/logo/mark.svg") : Absolute(logo),
-        }, JsonOptions);
+            // Ties this site to the same organisation on other platforms.
+            ["sameAs"] = sameAs.Length > 0 ? sameAs : null,
+        });
     }
 
     private string ArticleJsonLd(Article article, IEnumerable<string> tagNames, string url, string? imageUrl)
@@ -182,7 +201,7 @@ public class SeoBuilder(SiteSettings settings, AppDbContext db, IHttpContextAcce
         var organization = settings.Get(SettingKeys.OrganizationName, settings.SiteName);
         var keywords = tagNames.ToArray();
 
-        return JsonSerializer.Serialize(new Dictionary<string, object?>
+        return Node(new Dictionary<string, object?>
         {
             ["@context"] = "https://schema.org",
             ["@type"] = "BlogPosting",
@@ -216,10 +235,10 @@ public class SeoBuilder(SiteSettings settings, AppDbContext db, IHttpContextAcce
             ["keywords"] = keywords.Length > 0 ? string.Join(", ", keywords) : null,
             ["wordCount"] = CountWords(article.BodyMarkdown),
             ["timeRequired"] = $"PT{Math.Max(1, article.ReadMinutes)}M",
-        }, JsonOptions);
+        });
     }
 
-    private string BreadcrumbJsonLd(Article article) => JsonSerializer.Serialize(new Dictionary<string, object?>
+    private string BreadcrumbJsonLd(Article article) => Node(new Dictionary<string, object?>
     {
         ["@context"] = "https://schema.org",
         ["@type"] = "BreadcrumbList",
@@ -240,7 +259,20 @@ public class SeoBuilder(SiteSettings settings, AppDbContext db, IHttpContextAcce
                 ["item"] = Absolute($"/articles/{article.Slug}"),
             },
         },
-    }, JsonOptions);
+    });
+
+    /// <summary>
+    /// Serialises a JSON-LD node with its null-valued entries dropped.
+    /// <para>
+    /// <c>DefaultIgnoreCondition.WhenWritingNull</c> only applies to object properties, not to
+    /// dictionary values, so without this the output carries entries like
+    /// <c>"sameAs":null</c> for every unset field.
+    /// </para>
+    /// </summary>
+    private static string Node(Dictionary<string, object?> values) =>
+        JsonSerializer.Serialize(
+            values.Where(pair => pair.Value is not null).ToDictionary(pair => pair.Key, pair => pair.Value),
+            JsonOptions);
 
     private static int CountWords(string? markdown) =>
         MarkdownRenderer.ToPlainText(markdown)

@@ -21,6 +21,9 @@ public static class SettingKeys
     public const string TwitterCreator = "seo.twitterCreator";
     public const string OrganizationName = "seo.organizationName";
     public const string OrganizationLogoUrl = "seo.organizationLogoUrl";
+
+    /// <summary>Newline-separated profile URLs, emitted as schema.org sameAs.</summary>
+    public const string OrganizationSameAs = "seo.organizationSameAs";
     public const string RobotsExtra = "seo.robotsExtra";
     public const string SitemapEnabled = "seo.sitemapEnabled";
 }

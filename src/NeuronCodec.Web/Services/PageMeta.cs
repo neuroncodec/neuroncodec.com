@@ -15,7 +15,15 @@ public class PageMeta
     public string? OgTitle { get; set; }
     public string? OgDescription { get; set; }
     public string? OgImageUrl { get; set; }
+    public string? OgImageAlt { get; set; }
     public string OgType { get; set; } = "website";
+    public string Locale { get; set; } = "en_US";
+
+    // Article-only Open Graph properties, emitted when OgType is "article".
+    public DateTime? PublishedTime { get; set; }
+    public DateTime? ModifiedTime { get; set; }
+    public string? Section { get; set; }
+    public IReadOnlyList<string> Tags { get; set; } = [];
 
     public string TwitterCardType { get; set; } = "summary_large_image";
     public string? TwitterSite { get; set; }
