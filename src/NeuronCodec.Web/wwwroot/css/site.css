@@ -385,14 +385,7 @@
 .about-section + .about-section { margin-top: 48px; }
 .about-section h2 { margin: 0 0 22px; }
 
-.pillar-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 16px;
-  margin-top: 36px;
-}
 
-.button-row { display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* ── Projects page ───────────────────────────────────────────────────────── */
 .projects-head { padding: 56px 0 8px; }
