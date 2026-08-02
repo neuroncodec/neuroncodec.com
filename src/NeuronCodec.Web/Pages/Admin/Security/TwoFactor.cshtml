@@ -1,0 +1,89 @@
+@page "/admin/security/two-factor"
+@model NeuronCodec.Web.Pages.Admin.Security.TwoFactorModel
+@{
+    ViewData["Title"] = "Two-factor authentication";
+    var admin = Model.Admin!;
+}
+
+<div class="admin-header">
+    <div>
+        <p class="breadcrumb"><a href="/admin/security">Security</a> / Two-factor</p>
+        <h1>Two-factor authentication</h1>
+        <p>
+            @if (admin.TwoFactorEnabled)
+            {
+                <span class="status-pill status-published">On</span>
+            }
+            else
+            {
+                <span class="status-pill status-draft">Off</span>
+            }
+        </p>
+    </div>
+</div>
+
+@if (Model.IsEnrolling)
+{
+    <div class="panel" style="max-width:820px">
+        <div class="panel-head">
+            <h2>Scan this code</h2>
+            <p>Open any authenticator app and add a new account.</p>
+        </div>
+
+        <div class="totp-setup">
+            <div class="qr-frame">@Html.Raw(Model.QrCodeSvg)</div>
+
+            <div class="stack">
+                <div>
+                    <p class="muted mt-0">Can't scan? Enter this key manually:</p>
+                    <div class="secret-code">@Model.PendingSecretDisplay</div>
+                    <p class="field-hint">Time-based, six digits, 30-second period.</p>
+                </div>
+
+                <form method="post" asp-page-handler="Enable" class="stack">
+                    <div class="field">
+                        <label for="enable-code">Code from your app</label>
+                        <input class="input code-input" id="enable-code" name="Code" inputmode="numeric"
+                               autocomplete="one-time-code" maxlength="7" required autofocus/>
+                    </div>
+                    <div class="row">
+                        <button type="submit" class="btn btn-primary">Turn on two-factor</button>
+                        <a href="/admin/security/two-factor" class="btn btn-ghost">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+else if (!admin.TwoFactorEnabled)
+{
+    <div class="panel" style="max-width:620px">
+        <p class="muted mt-0">
+            With two-factor on, signing in needs a code from your authenticator app as well as your
+            password. You will get ten single-use recovery codes for when that app is unavailable.
+        </p>
+        <a href="/admin/security/two-factor?setup=true" class="btn btn-primary">Set up two-factor</a>
+    </div>
+}
+else
+{
+    <div class="panel" style="max-width:620px">
+        <div class="panel-head">
+            <h2>Turn two-factor off</h2>
+            <p>Your password alone would then protect the admin area.</p>
+        </div>
+        <form method="post" asp-page-handler="Disable" class="stack"
+              onsubmit="return confirm('Turn off two-factor authentication?')">
+            <div class="field">
+                <label for="disable-code">Current code</label>
+                <input class="input code-input" id="disable-code" name="Code" inputmode="numeric"
+                       maxlength="7" required/>
+                <p class="field-hint">Required so a stolen session cannot disable it.</p>
+            </div>
+            <div class="row">
+                <button type="submit" class="btn btn-ghost danger">Turn off two-factor</button>
+                <a href="/admin/security/recovery-codes" class="btn btn-secondary">Manage recovery codes</a>
+            </div>
+        </form>
+    </div>
+}

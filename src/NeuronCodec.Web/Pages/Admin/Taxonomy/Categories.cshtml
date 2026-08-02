@@ -1,0 +1,96 @@
+@page "/admin/taxonomy/categories"
+@model NeuronCodec.Web.Pages.Admin.Taxonomy.CategoriesModel
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>Categories</h1>
+        <p>A category sets the coloured pill on an article's card. An article has at most one.</p>
+    </div>
+</div>
+
+<div class="panel" style="max-width:860px">
+    <div class="panel-head"><h2>Add a category</h2></div>
+    <form method="post" asp-page-handler="Create" class="stack">
+        <div class="field-row">
+            <div class="field">
+                <label for="new-name">Name</label>
+                <input class="input" id="new-name" name="name" required placeholder="Neuroscience"/>
+            </div>
+            <div class="field">
+                <label for="new-class">Pill colour</label>
+                <select class="input" id="new-class" name="tagClass">
+                    @foreach (var option in Model.TagClassOptions)
+                    {
+                        <option value="@option">@TagClasses.Label(option)</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="field">
+            <label for="new-description">Description</label>
+            <input class="input" id="new-description" name="description"
+                   placeholder="Optional, for your own reference"/>
+        </div>
+        <div class="row row-end">
+            <button type="submit" class="btn btn-primary">Add category</button>
+        </div>
+    </form>
+</div>
+
+<div class="panel panel-flush">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="cell-wrap">Category</th>
+                <th>Pill</th>
+                <th>Articles</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.Categories.Count == 0)
+            {
+                <tr><td colspan="4" class="empty-row">No categories yet.</td></tr>
+            }
+            @foreach (var row in Model.Categories)
+            {
+                <tr>
+                    <td class="cell-wrap">
+                        <form method="post" asp-page-handler="Update" class="stack-sm">
+                            <input type="hidden" name="id" value="@row.Category.Id"/>
+                            <input class="input" name="name" value="@row.Category.Name" required
+                                   aria-label="Category name"/>
+                            <input class="input mono" name="slug" value="@row.Category.Slug"
+                                   aria-label="Category slug"/>
+                            <input class="input" name="description" value="@row.Category.Description"
+                                   placeholder="Description" aria-label="Category description"/>
+                            <select class="input" name="tagClass" aria-label="Pill colour">
+                                @foreach (var option in Model.TagClassOptions)
+                                {
+                                    <option value="@option" selected="@(row.Category.TagClass == option)">
+                                        @TagClasses.Label(option)
+                                    </option>
+                                }
+                            </select>
+                            <button type="submit" class="btn btn-secondary">Save changes</button>
+                        </form>
+                    </td>
+                    <td><span class="tag @row.Category.TagClass">@row.Category.Name</span></td>
+                    <td class="muted">@row.ArticleCount</td>
+                    <td class="row-actions">
+                        <form method="post" asp-page-handler="Delete"
+                              onsubmit="return confirm('Delete this category? Its articles keep their content but lose the pill.')">
+                            <input type="hidden" name="id" value="@row.Category.Id"/>
+                            <button type="submit" class="btn btn-ghost danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+@page "/admin/taxonomy/tags"
+@model NeuronCodec.Web.Pages.Admin.Taxonomy.TagsModel
+@{
+    ViewData["Title"] = "Tags";
+}
+
+<div class="admin-header">
+    <div>
+        <h1>Tags</h1>
+        <p>The finer grouping. An article can carry any number.</p>
+    </div>
+</div>
+
+<div class="panel" style="max-width:860px">
+    <div class="panel-head">
+        <h2>Add a tag</h2>
+        <p>Tags are also created automatically when you type a new one in the editor.</p>
+    </div>
+    <form method="post" asp-page-handler="Create" class="row">
+        <input class="input grow" name="name" required placeholder="spike sorting" aria-label="Tag name"/>
+        <button type="submit" class="btn btn-primary">Add tag</button>
+    </form>
+</div>
+
+<div class="panel panel-flush">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="cell-wrap">Tag</th>
+                <th>Slug</th>
+                <th>Articles</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.Tags.Count == 0)
+            {
+                <tr><td colspan="4" class="empty-row">No tags yet.</td></tr>
+            }
+            @foreach (var row in Model.Tags)
+            {
+                <tr>
+                    <td class="cell-wrap">
+                        <form method="post" asp-page-handler="Rename" class="row">
+                            <input type="hidden" name="id" value="@row.Tag.Id"/>
+                            <input class="input grow" name="name" value="@row.Tag.Name" required
+                                   aria-label="Tag name"/>
+                            <button type="submit" class="btn btn-secondary">Rename</button>
+                        </form>
+                    </td>
+                    <td class="mono muted">@row.Tag.Slug</td>
+                    <td class="muted">@row.ArticleCount</td>
+                    <td class="row-actions">
+                        <form method="post" asp-page-handler="Delete"
+                              onsubmit="return confirm('Delete this tag? It is removed from every article that uses it.')">
+                            <input type="hidden" name="id" value="@row.Tag.Id"/>
+                            <button type="submit" class="btn btn-ghost danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

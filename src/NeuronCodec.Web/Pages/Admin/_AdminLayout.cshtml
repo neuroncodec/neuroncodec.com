@@ -1,8 +1,14 @@
 @inject SiteSettings Settings
 @{
     var section = ViewData["AdminSection"] as string ?? "";
+    var page = ViewData["AdminPage"] as string ?? "";
     var title = ViewData["Title"] as string ?? "Admin";
+
+    // A group opens when the current page lives inside it, so the sidebar always shows where
+    // you are without needing script to restore state.
+    string? Group(string name) => section == name ? "open" : null;
     string? Current(string name) => section == name ? "page" : null;
+    string? Leaf(string name) => page == name ? "page" : null;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -28,35 +34,68 @@
             </span>
         </a>
 
-        <nav class="admin-nav">
-            <a href="/admin" aria-current="@Current("dashboard")">
+        <nav class="admin-nav" aria-label="Admin">
+            <a class="nav-item" href="/admin" aria-current="@Current("dashboard")">
                 <partial name="_Icon" model="@("layout-dashboard")"/> Dashboard
             </a>
 
-            <span class="admin-nav-group">Content</span>
-            <a href="/admin/articles" aria-current="@Current("articles")">
-                <partial name="_Icon" model="@("file-text")"/> Articles
-            </a>
-            <a href="/admin/taxonomy" aria-current="@Current("taxonomy")">
-                <partial name="_Icon" model="@("tags")"/> Categories &amp; tags
-            </a>
-            <a href="/admin/media" aria-current="@Current("media")">
+            <span class="admin-nav-heading">Content</span>
+
+            <details class="nav-group" open="@Group("articles")">
+                <summary>
+                    <partial name="_Icon" model="@("file-text")"/>
+                    <span class="grow">Articles</span>
+                    <partial name="_Icon" model="@("chevron")"/>
+                </summary>
+                <a href="/admin/articles" aria-current="@Leaf("articles-list")">All articles</a>
+                <a href="/admin/articles/edit" aria-current="@Leaf("articles-new")">New article</a>
+            </details>
+
+            <details class="nav-group" open="@Group("taxonomy")">
+                <summary>
+                    <partial name="_Icon" model="@("tags")"/>
+                    <span class="grow">Categories &amp; tags</span>
+                    <partial name="_Icon" model="@("chevron")"/>
+                </summary>
+                <a href="/admin/taxonomy/categories" aria-current="@Leaf("categories")">Categories</a>
+                <a href="/admin/taxonomy/tags" aria-current="@Leaf("tags")">Tags</a>
+            </details>
+
+            <a class="nav-item" href="/admin/media" aria-current="@Current("media")">
                 <partial name="_Icon" model="@("image")"/> Media
             </a>
 
-            <span class="admin-nav-group">Site</span>
-            <a href="/admin/seo" aria-current="@Current("seo")">
-                <partial name="_Icon" model="@("search")"/> SEO
-            </a>
-            <a href="/admin/security" aria-current="@Current("security")">
-                <partial name="_Icon" model="@("shield")"/> Security
-            </a>
+            <span class="admin-nav-heading">Site</span>
+
+            <details class="nav-group" open="@Group("seo")">
+                <summary>
+                    <partial name="_Icon" model="@("search")"/>
+                    <span class="grow">SEO</span>
+                    <partial name="_Icon" model="@("chevron")"/>
+                </summary>
+                <a href="/admin/seo" aria-current="@Leaf("seo-overview")">Overview</a>
+                <a href="/admin/seo/identity" aria-current="@Leaf("seo-identity")">Identity</a>
+                <a href="/admin/seo/sharing" aria-current="@Leaf("seo-sharing")">Sharing</a>
+                <a href="/admin/seo/structured-data" aria-current="@Leaf("seo-structured")">Structured data</a>
+                <a href="/admin/seo/crawling" aria-current="@Leaf("seo-crawling")">Crawling</a>
+            </details>
+
+            <details class="nav-group" open="@Group("security")">
+                <summary>
+                    <partial name="_Icon" model="@("shield")"/>
+                    <span class="grow">Security</span>
+                    <partial name="_Icon" model="@("chevron")"/>
+                </summary>
+                <a href="/admin/security" aria-current="@Leaf("security-overview")">Overview</a>
+                <a href="/admin/security/change-password" aria-current="@Leaf("security-password")">Password</a>
+                <a href="/admin/security/two-factor" aria-current="@Leaf("security-2fa")">Two-factor</a>
+                <a href="/admin/security/recovery-codes" aria-current="@Leaf("security-recovery")">Recovery codes</a>
+            </details>
         </nav>
 
         <div class="admin-sidebar-foot">
             <a href="/" target="_blank" rel="noopener" class="btn btn-secondary btn-block">View site →</a>
             <form method="post" action="/admin/logout">
-                @Html.AntiForgeryToken()
                 <button type="submit" class="btn btn-ghost btn-block">Sign out</button>
             </form>
         </div>

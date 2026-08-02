@@ -1,0 +1,71 @@
+@page "/admin/security/recovery-codes"
+@model NeuronCodec.Web.Pages.Admin.Security.RecoveryCodesModel
+@{
+    ViewData["Title"] = "Recovery codes";
+    var admin = Model.Admin!;
+}
+
+<div class="admin-header">
+    <div>
+        <p class="breadcrumb"><a href="/admin/security">Security</a> / Recovery codes</p>
+        <h1>Recovery codes</h1>
+        <p>@Model.Remaining of @Model.Total unused.</p>
+    </div>
+</div>
+
+@if (Model.NewCodes is { Count: > 0 })
+{
+    <div class="panel" style="max-width:760px">
+        <div class="panel-head">
+            <h2>Save these now</h2>
+            <p>Shown once. Each code works a single time.</p>
+        </div>
+        <div class="alert alert-error">
+            These will not be shown again. Store them somewhere you can reach without this site.
+        </div>
+        <div class="recovery-grid">
+            @foreach (var code in Model.NewCodes)
+            {
+                <span class="recovery-code">@code</span>
+            }
+        </div>
+        <div class="row">
+            <button type="button" class="btn btn-secondary"
+                    data-copy-text="@string.Join(" ", Model.NewCodes)">Copy all</button>
+        </div>
+    </div>
+}
+
+@if (!admin.TwoFactorEnabled)
+{
+    <div class="panel" style="max-width:620px">
+        <p class="muted mt-0">
+            Recovery codes are generated when you turn two-factor authentication on.
+        </p>
+        <a href="/admin/security/two-factor" class="btn btn-primary">Set up two-factor</a>
+    </div>
+}
+else
+{
+    <div class="panel" style="max-width:620px">
+        <div class="panel-head">
+            <h2>Generate a new set</h2>
+            <p>Replaces every existing code, used or not.</p>
+        </div>
+        <form method="post" class="stack">
+            <div class="field">
+                <label for="regen-code">Current code</label>
+                <input class="input code-input" id="regen-code" name="Code" inputmode="numeric"
+                       maxlength="7" required/>
+                <p class="field-hint">From your authenticator app.</p>
+            </div>
+            <div class="row">
+                <button type="submit" class="btn btn-secondary">Generate new codes</button>
+            </div>
+        </form>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/copy-text.js"></script>
+}

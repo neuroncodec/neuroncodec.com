@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = Model.IsNew ? "New article" : "Edit article";
     ViewData["AdminSection"] = "articles";
+    ViewData["AdminPage"] = Model.IsNew ? "articles-new" : "";
 }
 
 <form method="post" id="article-form">
@@ -193,7 +194,7 @@
                         </select>
                         <p class="field-hint">
                             Sets the pill on article cards.
-                            <a href="/admin/taxonomy" target="_blank" rel="noopener">Manage categories</a>.
+                            <a href="/admin/taxonomy/categories" target="_blank" rel="noopener">Manage categories</a>.
                         </p>
                     </div>
 

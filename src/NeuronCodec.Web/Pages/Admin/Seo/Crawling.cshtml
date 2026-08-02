@@ -1,0 +1,44 @@
+@page "/admin/seo/crawling"
+@model NeuronCodec.Web.Pages.Admin.Seo.CrawlingModel
+@{
+    ViewData["Title"] = "SEO — Crawling";
+}
+
+<div class="admin-header">
+    <div>
+        <p class="breadcrumb"><a href="/admin/seo">SEO</a> / Crawling</p>
+        <h1>Crawling</h1>
+        <p>What search engines are told they may fetch.</p>
+    </div>
+    <div class="admin-header-actions">
+        <a class="btn btn-secondary" href="/robots.txt" target="_blank" rel="noopener">View robots.txt</a>
+        <a class="btn btn-secondary" href="/sitemap.xml" target="_blank" rel="noopener">View sitemap.xml</a>
+    </div>
+</div>
+
+<form method="post" class="panel" style="max-width:760px">
+    <div class="stack">
+        <label class="checkbox">
+            <input type="checkbox" asp-for="SitemapEnabled"/>
+            Serve /sitemap.xml and reference it from robots.txt
+        </label>
+        <p class="field-hint mt-0">
+            Currently advertised as <span class="mono">@Model.SitemapUrl</span>. Drafts, future-dated
+            posts and anything marked noindex are left out.
+        </p>
+
+        <div class="field">
+            <label asp-for="RobotsExtra">Extra robots.txt rules</label>
+            <textarea class="input mono" asp-for="RobotsExtra" rows="6"
+                      placeholder="Disallow: /private"></textarea>
+            <p class="field-hint">
+                Appended verbatim. <span class="mono">/admin</span> and
+                <span class="mono">/error</span> are always disallowed.
+            </p>
+        </div>
+    </div>
+
+    <div class="row row-end" style="margin-top:var(--space-4)">
+        <button type="submit" class="btn btn-primary">Save crawling</button>
+    </div>
+</form>

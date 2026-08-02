@@ -2,7 +2,6 @@
 @model NeuronCodec.Web.Pages.Admin.Seo.IndexModel
 @{
     ViewData["Title"] = "SEO";
-    ViewData["AdminSection"] = "seo";
 }
 
 <div class="admin-header">
@@ -17,149 +16,72 @@
     </div>
 </div>
 
+@if (!Model.BaseUrlConfigured)
+{
+    <div class="alert alert-error">
+        No canonical base URL is set, so canonical links and the sitemap follow whatever host the
+        request arrives on. Behind a proxy or tunnel that is rarely the public address.
+        <a href="/admin/seo/identity">Set it under Identity</a>.
+    </div>
+}
+
 <div class="stat-grid">
     <div class="card elev-sm stat-card">
         <span class="card-kicker">Indexable</span>
-        <span class="stat-value">@Model.IndexableArticleCount</span>
+        <span class="stat-value">@Model.IndexableCount</span>
     </div>
     <div class="card elev-sm stat-card">
         <span class="card-kicker">Marked noindex</span>
-        <span class="stat-value">@Model.NoIndexArticleCount</span>
+        <span class="stat-value">@Model.NoIndexCount</span>
     </div>
     <div class="card elev-sm stat-card">
         <span class="card-kicker">No description</span>
-        <span class="stat-value">@Model.MissingMetaDescriptionCount</span>
+        <span class="stat-value">@Model.MissingDescriptionCount</span>
     </div>
 </div>
 
-<form method="post" class="stack">
-    @Html.AntiForgeryToken()
+<div class="settings-grid">
+    <a class="card elev-sm settings-link" href="/admin/seo/identity">
+        <span class="card-kicker">01 — Identity</span>
+        <h3 class="card-title">Name, tagline and canonical URL</h3>
+        <p class="card-body">
+            Resolving to <span class="mono">@Model.ResolvedBaseUrl</span>.
+            @if (string.IsNullOrWhiteSpace(Model.DefaultMetaDescription))
+            {
+                <text>No default meta description set.</text>
+            }
+        </p>
+        <span class="settings-link-go">Edit <partial name="_Icon" model="@("arrow-right")"/></span>
+    </a>
 
-    <div asp-validation-summary="All" class="alert alert-error" role="alert"
-         style="@(ViewData.ModelState.IsValid ? "display:none" : "")"></div>
+    <a class="card elev-sm settings-link" href="/admin/seo/sharing">
+        <span class="card-kicker">02 — Sharing</span>
+        <h3 class="card-title">Open Graph and Twitter cards</h3>
+        <p class="card-body">
+            @(Model.HasDefaultShareImage
+                ? "A default share image is set."
+                : "No default share image — links share without a picture.")
+        </p>
+        <span class="settings-link-go">Edit <partial name="_Icon" model="@("arrow-right")"/></span>
+    </a>
 
-    <div class="panel">
-        <div class="panel-head"><h2>Identity</h2></div>
-        <div class="stack">
-            <div class="field-row">
-                <div class="field">
-                    <label asp-for="Input.SiteName">Site name</label>
-                    <input class="input" asp-for="Input.SiteName" placeholder="NeuronCodec"/>
-                </div>
-                <div class="field">
-                    <label asp-for="Input.Tagline">Footer tagline</label>
-                    <input class="input" asp-for="Input.Tagline" placeholder="open-source foundation"/>
-                </div>
-            </div>
+    <a class="card elev-sm settings-link" href="/admin/seo/structured-data">
+        <span class="card-kicker">03 — Structured data</span>
+        <h3 class="card-title">JSON-LD organisation details</h3>
+        <p class="card-body">
+            @(Model.HasOrganisation
+                ? "Organisation details feed the JSON-LD on every page."
+                : $"Falling back to the site name, {Model.SiteName}.")
+        </p>
+        <span class="settings-link-go">Edit <partial name="_Icon" model="@("arrow-right")"/></span>
+    </a>
 
-            <div class="field">
-                <label asp-for="Input.BaseUrl">Canonical base URL</label>
-                <input class="input mono" asp-for="Input.BaseUrl" type="url"
-                       placeholder="https://neuroncodec.com"/>
-                <p class="field-hint">
-                    Used for canonical links, the sitemap and share tags.
-                    Currently resolving to <span class="mono">@Model.ResolvedBaseUrl</span>.
-                    Leave blank to use whatever host the request arrives on.
-                </p>
-                <span asp-validation-for="Input.BaseUrl" class="field-error"></span>
-            </div>
-
-            <div class="field">
-                <label asp-for="Input.DefaultMetaDescription">Default meta description</label>
-                <textarea class="input" asp-for="Input.DefaultMetaDescription" rows="2" maxlength="400"></textarea>
-                <p class="field-hint">Used on pages, and on articles with no description of their own.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-head">
-            <h2>Sharing</h2>
-            <p>Open Graph and Twitter card defaults.</p>
-        </div>
-        <div class="stack">
-            <div class="field">
-                <label>Default share image</label>
-                <input type="hidden" asp-for="Input.DefaultOgImageId" id="og-default-id"/>
-                <div class="row" id="og-default-slot">
-                    @if (Model.DefaultOgImage is not null)
-                    {
-                        <img src="@Model.DefaultOgImage.Url" alt="" width="140"
-                             style="border-radius:var(--radius-sm)"/>
-                        <span class="muted">@Model.DefaultOgImage.OriginalName</span>
-                    }
-                    else
-                    {
-                        <span class="muted">No default image set.</span>
-                    }
-                </div>
-                <div class="row" style="margin-top:8px">
-                    <button type="button" class="btn btn-secondary"
-                            data-pick-media="og-default-id" data-slot="og-default-slot">Choose image</button>
-                    <button type="button" class="btn btn-ghost"
-                            data-clear-media="og-default-id" data-slot="og-default-slot">Clear</button>
-                </div>
-                <p class="field-hint">Recommended 1200×630. Used when an article has no image of its own.</p>
-            </div>
-
-            <div class="field-row">
-                <div class="field">
-                    <label asp-for="Input.TwitterSite">Twitter site handle</label>
-                    <input class="input" asp-for="Input.TwitterSite" placeholder="@@neuroncodec"/>
-                </div>
-                <div class="field">
-                    <label asp-for="Input.TwitterCreator">Twitter creator handle</label>
-                    <input class="input" asp-for="Input.TwitterCreator" placeholder="@@neuroncodec"/>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-head">
-            <h2>Structured data</h2>
-            <p>Feeds the JSON-LD emitted on the home page and on every article.</p>
-        </div>
-        <div class="field-row">
-            <div class="field">
-                <label asp-for="Input.OrganizationName">Organisation name</label>
-                <input class="input" asp-for="Input.OrganizationName" placeholder="NeuronCodec"/>
-            </div>
-            <div class="field">
-                <label asp-for="Input.OrganizationLogoUrl">Organisation logo URL</label>
-                <input class="input mono" asp-for="Input.OrganizationLogoUrl" placeholder="/logo/mark.svg"/>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-head"><h2>Crawling</h2></div>
-        <div class="stack">
-            <label class="checkbox">
-                <input type="checkbox" asp-for="Input.SitemapEnabled"/>
-                Serve /sitemap.xml and reference it from robots.txt
-            </label>
-
-            <div class="field">
-                <label asp-for="Input.RobotsExtra">Extra robots.txt rules</label>
-                <textarea class="input mono" asp-for="Input.RobotsExtra" rows="5"
-                          placeholder="Disallow: /private"></textarea>
-                <p class="field-hint">
-                    Appended verbatim. <span class="mono">/admin</span> and
-                    <span class="mono">/error</span> are always disallowed.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="row row-end">
-        <button type="submit" class="btn btn-primary">Save settings</button>
-    </div>
-</form>
-
-<partial name="_MediaPickerDialog"/>
-
-@section Scripts {
-    <script src="~/js/media-picker.js"></script>
-    <script src="~/js/media-slots.js"></script>
-}
+    <a class="card elev-sm settings-link" href="/admin/seo/crawling">
+        <span class="card-kicker">04 — Crawling</span>
+        <h3 class="card-title">Sitemap and robots.txt</h3>
+        <p class="card-body">
+            Sitemap is @(Model.SitemapEnabled ? "served and referenced from robots.txt" : "turned off").
+        </p>
+        <span class="settings-link-go">Edit <partial name="_Icon" model="@("arrow-right")"/></span>
+    </a>
+</div>

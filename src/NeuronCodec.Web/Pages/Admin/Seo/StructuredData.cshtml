@@ -1,0 +1,48 @@
+@page "/admin/seo/structured-data"
+@model NeuronCodec.Web.Pages.Admin.Seo.StructuredDataModel
+@{
+    ViewData["Title"] = "SEO — Structured data";
+}
+
+<div class="admin-header">
+    <div>
+        <p class="breadcrumb"><a href="/admin/seo">SEO</a> / Structured data</p>
+        <h1>Structured data</h1>
+        <p>Feeds the JSON-LD emitted on the home page and on every article.</p>
+    </div>
+</div>
+
+<form method="post" class="panel" style="max-width:760px">
+    <div asp-validation-summary="All" class="alert alert-error" role="alert"
+         style="@(ViewData.ModelState.IsValid ? "display:none" : "")"></div>
+
+    <div class="stack">
+        <div class="field-row">
+            <div class="field">
+                <label asp-for="OrganizationName">Organisation name</label>
+                <input class="input" asp-for="OrganizationName" placeholder="NeuronCodec"/>
+                <p class="field-hint">Falls back to the site name.</p>
+            </div>
+            <div class="field">
+                <label asp-for="OrganizationLogoUrl">Organisation logo URL</label>
+                <input class="input mono" asp-for="OrganizationLogoUrl" placeholder="/logo/mark.svg"/>
+                <p class="field-hint">Relative paths are resolved against the canonical base URL.</p>
+            </div>
+        </div>
+
+        <div class="field">
+            <label asp-for="SameAsUrls">Profile URLs</label>
+            <textarea class="input mono" asp-for="SameAsUrls" rows="4"
+                      placeholder="https://github.com/neuroncodec&#10;https://www.linkedin.com/company/neuroncodec/"></textarea>
+            <p class="field-hint">
+                One per line. Emitted as <span class="mono">sameAs</span>, which is how search
+                engines tie this site to the same organisation elsewhere.
+            </p>
+            <span asp-validation-for="SameAsUrls" class="field-error"></span>
+        </div>
+    </div>
+
+    <div class="row row-end" style="margin-top:var(--space-4)">
+        <button type="submit" class="btn btn-primary">Save structured data</button>
+    </div>
+</form>

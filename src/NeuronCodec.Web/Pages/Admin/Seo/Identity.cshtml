@@ -1,0 +1,52 @@
+@page "/admin/seo/identity"
+@model NeuronCodec.Web.Pages.Admin.Seo.IdentityModel
+@{
+    ViewData["Title"] = "SEO — Identity";
+}
+
+<div class="admin-header">
+    <div>
+        <p class="breadcrumb"><a href="/admin/seo">SEO</a> / Identity</p>
+        <h1>Identity</h1>
+        <p>What the site calls itself, and the address every generated URL is built from.</p>
+    </div>
+</div>
+
+<form method="post" class="panel" style="max-width:760px">
+    <div asp-validation-summary="All" class="alert alert-error" role="alert"
+         style="@(ViewData.ModelState.IsValid ? "display:none" : "")"></div>
+
+    <div class="stack">
+        <div class="field-row">
+            <div class="field">
+                <label asp-for="SiteName">Site name</label>
+                <input class="input" asp-for="SiteName" placeholder="NeuronCodec"/>
+            </div>
+            <div class="field">
+                <label asp-for="Tagline">Footer tagline</label>
+                <input class="input" asp-for="Tagline" placeholder="open-source foundation"/>
+            </div>
+        </div>
+
+        <div class="field">
+            <label asp-for="BaseUrl">Canonical base URL</label>
+            <input class="input mono" asp-for="BaseUrl" type="url" placeholder="https://neuroncodec.com"/>
+            <p class="field-hint">
+                Used for canonical links, the sitemap and share tags. Currently resolving to
+                <span class="mono">@Model.ResolvedBaseUrl</span>. Set this when the site sits behind a
+                proxy or tunnel — otherwise every URL follows the internal host the request arrived on.
+            </p>
+            <span asp-validation-for="BaseUrl" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="DefaultMetaDescription">Default meta description</label>
+            <textarea class="input" asp-for="DefaultMetaDescription" rows="3" maxlength="400"></textarea>
+            <p class="field-hint">Used on pages, and on articles with no description of their own.</p>
+        </div>
+    </div>
+
+    <div class="row row-end" style="margin-top:var(--space-4)">
+        <button type="submit" class="btn btn-primary">Save identity</button>
+    </div>
+</form>
