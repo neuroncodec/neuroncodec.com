@@ -53,30 +53,35 @@ else
     <div class="media-grid">
         @foreach (var file in Model.Items)
         {
-            <div class="media-item" style="cursor:default">
-                <div class="media-thumb">
-                    @if (file.IsImage)
-                    {
-                        <img src="@file.Url" alt="@file.AltText" loading="lazy"/>
-                    }
-                    else
-                    {
-                        <span class="media-ext">@file.Extension.TrimStart('.')</span>
-                    }
-                </div>
-                <span class="media-name" title="@file.OriginalName">@file.OriginalName</span>
-                <span class="media-meta">
-                    @Format.FileSize(file.SizeBytes)
-                    @if (file.Width is { } w && file.Height is { } h)
-                    {
-                        <text> · @w×@h</text>
-                    }
-                </span>
+            <div class="media-item">
+                @* The whole tile opens the details dialog; the action buttons below stop the
+                   click from bubbling so they keep their own behaviour. *@
+                <button type="button" class="media-open" data-open-details="details-@file.Id"
+                        aria-label="Details for @file.OriginalName">
+                    <span class="media-thumb">
+                        @if (file.IsImage)
+                        {
+                            <img src="@file.Url" alt="@file.AltText" loading="lazy"/>
+                        }
+                        else
+                        {
+                            <span class="media-ext">@file.Extension.TrimStart('.')</span>
+                        }
+                    </span>
+                    <span class="media-name" title="@file.OriginalName">@file.OriginalName</span>
+                    <span class="media-meta">
+                        @Format.FileSize(file.SizeBytes)
+                        @if (file.Width is { } w && file.Height is { } h)
+                        {
+                            <text> · @w×@h</text>
+                        }
+                    </span>
+                    <span class="media-meta">Uploaded @Format.ShortDateTime(file.UploadedAt) UTC</span>
+                </button>
 
                 <div class="media-actions">
                     <button type="button" class="btn btn-secondary" data-copy-url="@file.Url">Copy URL</button>
                     <a class="btn btn-secondary" href="@file.Url" target="_blank" rel="noopener">Open</a>
-                    <button type="button" class="btn btn-secondary" data-open-details="details-@file.Id">Details</button>
                 </div>
 
                 <dialog class="modal" id="details-@file.Id">
@@ -88,8 +93,31 @@ else
                         @if (file.IsImage)
                         {
                             <img src="@file.Url" alt="@file.AltText"
-                                 style="max-height:220px;width:auto;border-radius:var(--radius-md)"/>
+                                 style="max-height:240px;width:auto;border-radius:var(--radius-md)"/>
                         }
+
+                        <dl class="detail-list">
+                            <dt>Uploaded</dt>
+                            <dd>@Format.LongDate(file.UploadedAt), @file.UploadedAt.ToString("HH:mm") UTC</dd>
+
+                            <dt>Original name</dt>
+                            <dd>@file.OriginalName</dd>
+
+                            <dt>Stored as</dt>
+                            <dd class="mono">@file.StoredName</dd>
+
+                            <dt>Type</dt>
+                            <dd class="mono">@file.ContentType</dd>
+
+                            <dt>Size</dt>
+                            <dd>@Format.FileSize(file.SizeBytes)</dd>
+
+                            @if (file.Width is { } dw && file.Height is { } dh)
+                            {
+                                <dt>Dimensions</dt>
+                                <dd>@dw × @dh pixels</dd>
+                            }
+                        </dl>
 
                         <div class="field">
                             <label>URL</label>
@@ -98,11 +126,6 @@ else
                                 <button type="button" class="btn btn-secondary" data-copy-url="@file.Url">Copy</button>
                             </div>
                         </div>
-
-                        <p class="muted mb-0">
-                            Uploaded @Format.ShortDateTime(file.UploadedAt) UTC ·
-                            @file.ContentType · @Format.FileSize(file.SizeBytes)
-                        </p>
 
                         <form method="post" asp-page-handler="Rename" class="field">
                             @Html.AntiForgeryToken()
